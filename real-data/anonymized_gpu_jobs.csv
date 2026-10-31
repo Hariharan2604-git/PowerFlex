@@ -1,0 +1,4 @@
+demoJobId,releaseOffsetMinutesUTC_rounded15m,observedStartOffsetMinutesUTC_rounded15m,observedEndOffsetMinutesUTC_rounded15m,queueWaitSeconds_roundedMinute,runtimeSeconds_rounded5Minutes,meterSamples,meterMaxGapSeconds,meanNodePowerW,peakNodePowerW,measuredNodeEnergyWh_trapezoid
+GPU-01,1005,1005,1035,120,1500,26,60.0,409.462,417.0,170.625
+GPU-02,1095,1095,1140,300,3000,49,61.0,497.163,576.0,396.755
+GPU-03,1215,1215,1230,60,1200,20,60.0,407.85,414.0,129.158

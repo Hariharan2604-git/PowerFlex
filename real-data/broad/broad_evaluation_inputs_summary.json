@@ -1,0 +1,85 @@
+{
+  "schemaVersion": "powerflex.broad-evaluation-inputs.v1",
+  "dataSources": [
+    {
+      "name": "NLR anonymized Eagle GPU job traces",
+      "url": "https://data.nlr.gov/submissions/152"
+    },
+    {
+      "name": "NLR Eagle GPU node iLO metrics",
+      "url": "https://data.nlr.gov/submissions/301"
+    },
+    {
+      "name": "EIA-930 PSCO hourly grid monitor",
+      "url": "https://www.eia.gov/electricity/gridmonitor/knownissues/xls/PSCO.xlsx"
+    }
+  ],
+  "months": [
+    "2019-12",
+    "2020-04",
+    "2020-08"
+  ],
+  "sampling": {
+    "meteredNodeCount": 6,
+    "meterRowsRead": 15639926,
+    "meterRowsInvalidDropped": 0,
+    "duplicateMeterRowsCollapsed": 0,
+    "jobSourceRecordsRead": 411921,
+    "jobRecordsMatchingMeteredNodes": 2872,
+    "completedSingleNodeGpuCandidates": 44,
+    "completeMeteredNodeDays": 466,
+    "replayCases": 22,
+    "rejectedNodeDays": {
+      "no_replayable_job": 449,
+      "no_idle_observations": 62,
+      "missing_meter_bin": 24
+    },
+    "carbonRowsInvalidOrMissingAcrossFullWorkbook": 26418,
+    "carbonHourlyRowsExportedForSelectedMonths": 2208
+  },
+  "cleaningAndTime": {
+    "jobAndMeterTimestamps": "Parsed as timezone-aware UTC; offsets represented in each UTC day window.",
+    "meterUnits": "Source iLO vl is instantaneous whole-node watts; scenario power is MW; CSV observed daily statistics are kW.",
+    "meterCleaning": "Reject non-numeric, non-finite, or negative W; retain zero; average duplicate node/timestamp rows; require all 96 fixed 15-minute UTC bins; no interpolation.",
+    "jobCleaning": "Completed GPU-partition records using exactly one sampled node; source job must start, submit, and end on one UTC date; reject overlap with other recorded occupancy, meter gaps over 300 seconds, incomplete profiles, and cases without safe 15-minute slack.",
+    "carbonUnits": "EIA consumed-electricity intensity reported in lbs CO2/kWh; converted using 1 lb/kWh = 453.59237 kg/MWh.",
+    "carbonAlignment": "EIA UTC time marks the end of each hourly interval; map to the preceding UTC hour and repeat its intensity across four 15-minute slots. No interpolation.",
+    "anonymization": "Generated case/job IDs only; omit source job IDs, node IDs, user/account/script hashes, names, paths, and raw records."
+  },
+  "sourceHashesSha256": {
+    "jobs": {
+      "anon_jobs_2019-12.json.bz2": "a8e66aa8c20a7cd3fec6bc48297130d3460b5e0c9e6bd96a974a882414cce619",
+      "anon_jobs_2020-04.json.bz2": "d8b60ed356db526fec41fdd6a8134d98371dec795da3712a67899bcd76553237",
+      "anon_jobs_2020-08.json.bz2": "980b2554ad3c6a1afe5b8546b2b2a9d57042d84d76c30e62d648f1e95690203b"
+    },
+    "meterCsv": {
+      "meterSource-01": "0cca31365fa002aa2eec0ecbb4cbed9a8468213ff3aea3a755b983365f2acabf",
+      "meterSource-02": "5a4acbfcb63de9f58fdff4e24629dacd48e443d9abe61a8378795f5b8e1ed793",
+      "meterSource-03": "31335ee46cae77a830f2a6821f0667289a973167f18b6370e221fa1f15c69845",
+      "meterSource-04": "67da90c4efff1bf9a1d01f3f9e5cba35c2dcdc8f4d4450bd44e9498a5fb5ca83",
+      "meterSource-05": "e0908a1ca957307d5662642d991cb3a81020df2d142213197f30bdfd84145653",
+      "meterSource-06": "b032ae3855fdce5b1827ed30c213c6607274a4ec0bd23056c1ffa94efa645292"
+    },
+    "eiaWorkbook": "9fb71fb57f02fdf5809b89a7714e44faef571bddad1fa44ac46ff86811ae3494"
+  },
+  "limitations": [
+    "The public job trace contains wallclock_req as a maximum runtime, not a contractual/user-provided completion deadline.",
+    "The 60-minute slack in these sensitivity cases is synthetic and cannot establish real SLA/deadline compliance.",
+    "EIA values are estimated balancing-authority consumption intensity, not data-center meter carbon or marginal emissions.",
+    "The sources contain no time-aligned site electricity price. Price/cost optimization is unavailable.",
+    "Power is whole-node iLO measurement. Per-job increments use a median-idle subtraction assumption, not causal per-job GPU power.",
+    "Cases independently move one job while holding other measured activity fixed; they are offline shadow counterfactuals, not a live Slurm integration or cluster-wide scheduler simulation."
+  ],
+  "inputFileHashes": {
+    "jobTrace-01": "a8e66aa8c20a7cd3fec6bc48297130d3460b5e0c9e6bd96a974a882414cce619",
+    "jobTrace-02": "d8b60ed356db526fec41fdd6a8134d98371dec795da3712a67899bcd76553237",
+    "jobTrace-03": "980b2554ad3c6a1afe5b8546b2b2a9d57042d84d76c30e62d648f1e95690203b",
+    "meterSource-01": "0cca31365fa002aa2eec0ecbb4cbed9a8468213ff3aea3a755b983365f2acabf",
+    "meterSource-02": "5a4acbfcb63de9f58fdff4e24629dacd48e443d9abe61a8378795f5b8e1ed793",
+    "meterSource-03": "31335ee46cae77a830f2a6821f0667289a973167f18b6370e221fa1f15c69845",
+    "meterSource-04": "67da90c4efff1bf9a1d01f3f9e5cba35c2dcdc8f4d4450bd44e9498a5fb5ca83",
+    "meterSource-05": "e0908a1ca957307d5662642d991cb3a81020df2d142213197f30bdfd84145653",
+    "meterSource-06": "b032ae3855fdce5b1827ed30c213c6607274a4ec0bd23056c1ffa94efa645292",
+    "regionalCarbonWorkbook": "9fb71fb57f02fdf5809b89a7714e44faef571bddad1fa44ac46ff86811ae3494"
+  }
+}

@@ -1,0 +1,13 @@
+# Local Slurm captures and site-specific operational inputs
+slurm-jobs.json
+site-signals.json
+powerflex-slurm-private-map.json
+*private-map*.json
+
+# Local secrets and generated files
+.env
+.env.local
+*.log
+.DS_Store
+__pycache__/
+*.py[cod]

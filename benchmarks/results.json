@@ -1,0 +1,298 @@
+{
+  "benchmarkSchemaVersion": "powerflex.benchmark.v1",
+  "appVersion": "PowerFlex v0.4",
+  "method": "Runs the current application scheduler twice per deterministic synthetic scenario, compares against the earliest-start schedule, and checks hard-constraint, deadline-window, and determinism invariants.",
+  "limitations": [
+    "Scenarios are synthetic and do not establish performance on real AI or data-center workloads.",
+    "This benchmark verifies repeatability and constraint reporting; it does not establish global optimality or production safety.",
+    "Cost and emissions are modeled values from synthetic profiles."
+  ],
+  "scenarios": [
+    {
+      "scenario": "balanced-default",
+      "provenance": "Synthetic preset workload and grid profiles; no facility measurements.",
+      "objective": "balanced",
+      "workloadScalePercent": 100,
+      "inputs": {
+        "powerCeilingMW": 5.8,
+        "maximum15MinuteRampMW": 0.35,
+        "jobs": 12
+      },
+      "baseline": {
+        "peakMW": 5.150652,
+        "max15MinuteRampMW": 0.287382,
+        "constraints": {
+          "feasible": true,
+          "capIntervals": 0,
+          "capHours": 0,
+          "capExcessMWh": 0,
+          "rampEvents": 0,
+          "rampExcessMW": 0,
+          "deadlineMisses": 0,
+          "totalViolationEvents": 0,
+          "totalExcess": 0
+        },
+        "energyCostUSD": 7658.48,
+        "emissionsKgCO2e": 36776.19
+      },
+      "result": {
+        "feasible": true,
+        "constraints": {
+          "feasible": true,
+          "capIntervals": 0,
+          "capHours": 0,
+          "capExcessMWh": 0,
+          "rampEvents": 0,
+          "rampExcessMW": 0,
+          "deadlineMisses": 0,
+          "totalViolationEvents": 0,
+          "totalExcess": 0
+        },
+        "jobsOnTime": 12,
+        "peakMW": 5.703924,
+        "peakReductionPercent": -10.7418,
+        "max15MinuteRampMW": 0.334738,
+        "energyCostUSD": 7722.59,
+        "energyCostDeltaPercent": 0.8372,
+        "emissionsKgCO2e": 36158.4,
+        "emissionsDeltaPercent": -1.6799,
+        "objectiveScore": 7516.339152
+      },
+      "checks": {
+        "deterministic": true,
+        "allJobsWithinReleaseDeadlineWindows": true,
+        "allJobsOnTime": true,
+        "feasibilityClassificationMatchesExpected": true
+      }
+    },
+    {
+      "scenario": "constrained-default",
+      "provenance": "Synthetic preset workload and grid profiles; no facility measurements.",
+      "objective": "stability",
+      "workloadScalePercent": 100,
+      "inputs": {
+        "powerCeilingMW": 5.3,
+        "maximum15MinuteRampMW": 0.22,
+        "jobs": 12
+      },
+      "baseline": {
+        "peakMW": 5.150652,
+        "max15MinuteRampMW": 0.549366,
+        "constraints": {
+          "feasible": false,
+          "capIntervals": 0,
+          "capHours": 0,
+          "capExcessMWh": 0,
+          "rampEvents": 9,
+          "rampExcessMW": 0.9334094592269482,
+          "deadlineMisses": 0,
+          "totalViolationEvents": 9,
+          "totalExcess": 0.9334094592269482
+        },
+        "energyCostUSD": 10166.68,
+        "emissionsKgCO2e": 41266.91
+      },
+      "result": {
+        "feasible": false,
+        "constraints": {
+          "feasible": false,
+          "capIntervals": 0,
+          "capHours": 0,
+          "capExcessMWh": 0,
+          "rampEvents": 2,
+          "rampExcessMW": 0.6292550760499354,
+          "deadlineMisses": 0,
+          "totalViolationEvents": 2,
+          "totalExcess": 0.6292550760499354
+        },
+        "jobsOnTime": 12,
+        "peakMW": 4.664779,
+        "peakReductionPercent": 9.4332,
+        "max15MinuteRampMW": 0.549366,
+        "energyCostUSD": 10173.15,
+        "energyCostDeltaPercent": 0.0637,
+        "emissionsKgCO2e": 41257.48,
+        "emissionsDeltaPercent": -0.0229,
+        "objectiveScore": 890.999474
+      },
+      "checks": {
+        "deterministic": true,
+        "allJobsWithinReleaseDeadlineWindows": true,
+        "allJobsOnTime": true,
+        "feasibilityClassificationMatchesExpected": true
+      }
+    },
+    {
+      "scenario": "renewables-default",
+      "provenance": "Synthetic preset workload and grid profiles; no facility measurements.",
+      "objective": "lowcarbon",
+      "workloadScalePercent": 100,
+      "inputs": {
+        "powerCeilingMW": 5.9,
+        "maximum15MinuteRampMW": 0.45,
+        "jobs": 12
+      },
+      "baseline": {
+        "peakMW": 5.150652,
+        "max15MinuteRampMW": 0.287382,
+        "constraints": {
+          "feasible": true,
+          "capIntervals": 0,
+          "capHours": 0,
+          "capExcessMWh": 0,
+          "rampEvents": 0,
+          "rampExcessMW": 0,
+          "deadlineMisses": 0,
+          "totalViolationEvents": 0,
+          "totalExcess": 0
+        },
+        "energyCostUSD": 8193.51,
+        "emissionsKgCO2e": 34147.42
+      },
+      "result": {
+        "feasible": true,
+        "constraints": {
+          "feasible": true,
+          "capIntervals": 0,
+          "capHours": 0,
+          "capExcessMWh": 0,
+          "rampEvents": 0,
+          "rampExcessMW": 0,
+          "deadlineMisses": 0,
+          "totalViolationEvents": 0,
+          "totalExcess": 0
+        },
+        "jobsOnTime": 12,
+        "peakMW": 5.806728,
+        "peakReductionPercent": -12.7377,
+        "max15MinuteRampMW": 0.420634,
+        "energyCostUSD": 7780.44,
+        "energyCostDeltaPercent": -5.0414,
+        "emissionsKgCO2e": 32537.67,
+        "emissionsDeltaPercent": -4.7141,
+        "objectiveScore": 11600.21496
+      },
+      "checks": {
+        "deterministic": true,
+        "allJobsWithinReleaseDeadlineWindows": true,
+        "allJobsOnTime": true,
+        "feasibilityClassificationMatchesExpected": true
+      }
+    },
+    {
+      "scenario": "balanced-125-percent-workload",
+      "provenance": "Synthetic preset workload and grid profiles; no facility measurements.",
+      "objective": "balanced",
+      "workloadScalePercent": 125,
+      "inputs": {
+        "powerCeilingMW": 5.8,
+        "maximum15MinuteRampMW": 0.35,
+        "jobs": 12
+      },
+      "baseline": {
+        "peakMW": 5.674277,
+        "max15MinuteRampMW": 0.357057,
+        "constraints": {
+          "feasible": false,
+          "capIntervals": 0,
+          "capHours": 0,
+          "capExcessMWh": 0,
+          "rampEvents": 2,
+          "rampExcessMW": 0.009868606412900993,
+          "deadlineMisses": 0,
+          "totalViolationEvents": 2,
+          "totalExcess": 0.009868606412900993
+        },
+        "energyCostUSD": 7870.99,
+        "emissionsKgCO2e": 37991.24
+      },
+      "result": {
+        "feasible": true,
+        "constraints": {
+          "feasible": true,
+          "capIntervals": 0,
+          "capHours": 0,
+          "capExcessMWh": 0,
+          "rampEvents": 0,
+          "rampExcessMW": 0,
+          "deadlineMisses": 0,
+          "totalViolationEvents": 0,
+          "totalExcess": 0
+        },
+        "jobsOnTime": 12,
+        "peakMW": 5.731038,
+        "peakReductionPercent": -1.0003,
+        "max15MinuteRampMW": 0.342557,
+        "energyCostUSD": 7937.02,
+        "energyCostDeltaPercent": 0.8389,
+        "emissionsKgCO2e": 37346.05,
+        "emissionsDeltaPercent": -1.6983,
+        "objectiveScore": 7527.61007
+      },
+      "checks": {
+        "deterministic": true,
+        "allJobsWithinReleaseDeadlineWindows": true,
+        "allJobsOnTime": true,
+        "feasibilityClassificationMatchesExpected": true
+      }
+    },
+    {
+      "scenario": "infeasible-low-cap",
+      "provenance": "Synthetic preset workload and grid profiles; no facility measurements.",
+      "objective": "balanced",
+      "workloadScalePercent": 100,
+      "inputs": {
+        "powerCeilingMW": 2.8,
+        "maximum15MinuteRampMW": 0.35,
+        "jobs": 12
+      },
+      "baseline": {
+        "peakMW": 5.150652,
+        "max15MinuteRampMW": 0.287382,
+        "constraints": {
+          "feasible": false,
+          "capIntervals": 96,
+          "capHours": 24,
+          "capExcessMWh": 21.04319375,
+          "rampEvents": 0,
+          "rampExcessMW": 0,
+          "deadlineMisses": 0,
+          "totalViolationEvents": 96,
+          "totalExcess": 84.172775
+        },
+        "energyCostUSD": 7658.48,
+        "emissionsKgCO2e": 36776.19
+      },
+      "result": {
+        "feasible": false,
+        "constraints": {
+          "feasible": false,
+          "capIntervals": 96,
+          "capHours": 24,
+          "capExcessMWh": 21.043193749999944,
+          "rampEvents": 0,
+          "rampExcessMW": 0,
+          "deadlineMisses": 0,
+          "totalViolationEvents": 96,
+          "totalExcess": 84.17277499999977
+        },
+        "jobsOnTime": 12,
+        "peakMW": 4.210926,
+        "peakReductionPercent": 18.2448,
+        "max15MinuteRampMW": 0.287382,
+        "energyCostUSD": 7691.46,
+        "energyCostDeltaPercent": 0.4306,
+        "emissionsKgCO2e": 36518.86,
+        "emissionsDeltaPercent": -0.6997,
+        "objectiveScore": 54021.889375
+      },
+      "checks": {
+        "deterministic": true,
+        "allJobsWithinReleaseDeadlineWindows": true,
+        "allJobsOnTime": true,
+        "feasibilityClassificationMatchesExpected": true
+      }
+    }
+  ],
+  "validationChecksPassed": true
+}

@@ -1,0 +1,112 @@
+{
+  "schemaVersion": "powerflex.real-data-eval.v1",
+  "dataset": "NLR Eagle anonymized jobs + Eagle iLO GPU-node telemetry",
+  "datasetReferences": [
+    "https://data.nlr.gov/submissions/152",
+    "https://data.nlr.gov/submissions/301"
+  ],
+  "citation": "Eash, Matthew, and Hilary Egan. 2020. NREL HPC Eagle Jobs Data. NLR Data Catalog. DOI: 10.7799/1722950. Clark, Struan. 2025. NLR HPC Eagle GPU Node Metrics. NLR Data Catalog. DOI: 10.7799/3015213.",
+  "windowUtc": {
+    "start": "2019-12-11T00:00:00+00:00",
+    "endExclusive": "2019-12-12T00:00:00+00:00"
+  },
+  "timeZone": "Source meter timestamps carry Z (UTC); job timestamps are timezone-aware Z timestamps. Derived exports use elapsed minutes from the UTC window start.",
+  "units": {
+    "sourceMeterValue": "W (instantaneous whole-node iLO power)",
+    "derivedPowerCsv": "kW (mean of source W readings in each 15-minute UTC interval; W / 1000)",
+    "jobEnergy": "Wh (trapezoidal integration of W readings over adjacent samples; gaps over 300 seconds excluded)",
+    "jobTimes": "seconds or elapsed minutes, as named"
+  },
+  "scope": "One representative Eagle GPU node over one UTC day. This is node telemetry, not facility load. Only completed, single-node GPU jobs with unambiguous non-overlapping node occupancy and continuous meter coverage are included in the per-job table.",
+  "cleaning": {
+    "jobRowsForSelectedNodeAndDay": 5,
+    "eligibleCompletedGpuJobsBeforeTelemetryChecks": 3,
+    "jobsRetainedAfterOverlapAndCoverageChecks": 3,
+    "powerSamplesInWindow": 1440,
+    "powerSampleIntervalMedianSeconds": 60.0,
+    "powerSampleIntervalMaximumSeconds": 61.0,
+    "power15MinuteBins": 96,
+    "emptyPowerBins": 0,
+    "estimatedIdleBaselineW": 407.0,
+    "matchingNodeRowsInSource": 2606464,
+    "invalidOrNegativeRowsDroppedAcrossTrace": 0,
+    "invalidOrNegativeRowsDroppedInSelectedWindow": 0,
+    "duplicateRowsCollapsedByTimestamp": 0,
+    "duplicateTimestamps": "Rows sharing a timestamp are averaged; source node identifier is only used as a local filter and is omitted from exports.",
+    "invalidValues": "Non-numeric, non-finite, or negative meter readings are discarded; zero-valued readings are retained; no valid source readings in the selected day were clipped or winsorized.",
+    "missingIntervals": "The selected day has a meter value in every 15-minute bin. No values are interpolated.",
+    "jobPowerField": "The legacy job avg_power field is deliberately excluded because its unit and aggregation scope are not specified in the catalog metadata.",
+    "jobOverlap": "Jobs that overlap another recorded job on the selected node are excluded from the per-job power table to avoid attributing shared node watts to one job."
+  },
+  "measuredResults": {
+    "meanNodePower_kW": 0.422249,
+    "p95NodePower_kW": 0.427,
+    "peakNodePower_kW": 0.724,
+    "p95NodePower15MinuteMean_kW": 0.45835,
+    "peak15MinuteMean_kW": 0.559333,
+    "max15MinuteRamp_kW": 0.144333,
+    "p95Abs15MinuteRamp_kW": 0.043687,
+    "estimatedMeterEnergy_kWh": 10.126982,
+    "anonymizedJobs": [
+      {
+        "demoJobId": "GPU-01",
+        "releaseOffsetMinutesUTC_rounded15m": 1005,
+        "observedStartOffsetMinutesUTC_rounded15m": 1005,
+        "observedEndOffsetMinutesUTC_rounded15m": 1035,
+        "queueWaitSeconds_roundedMinute": 120,
+        "runtimeSeconds_rounded5Minutes": 1500,
+        "meterSamples": 26,
+        "meterMaxGapSeconds": 60.0,
+        "meanNodePowerW": 409.462,
+        "peakNodePowerW": 417.0,
+        "measuredNodeEnergyWh_trapezoid": 170.625
+      },
+      {
+        "demoJobId": "GPU-02",
+        "releaseOffsetMinutesUTC_rounded15m": 1095,
+        "observedStartOffsetMinutesUTC_rounded15m": 1095,
+        "observedEndOffsetMinutesUTC_rounded15m": 1140,
+        "queueWaitSeconds_roundedMinute": 300,
+        "runtimeSeconds_rounded5Minutes": 3000,
+        "meterSamples": 49,
+        "meterMaxGapSeconds": 61.0,
+        "meanNodePowerW": 497.163,
+        "peakNodePowerW": 576.0,
+        "measuredNodeEnergyWh_trapezoid": 396.755
+      },
+      {
+        "demoJobId": "GPU-03",
+        "releaseOffsetMinutesUTC_rounded15m": 1215,
+        "observedStartOffsetMinutesUTC_rounded15m": 1215,
+        "observedEndOffsetMinutesUTC_rounded15m": 1230,
+        "queueWaitSeconds_roundedMinute": 60,
+        "runtimeSeconds_rounded5Minutes": 1200,
+        "meterSamples": 20,
+        "meterMaxGapSeconds": 60.0,
+        "meanNodePowerW": 407.85,
+        "peakNodePowerW": 414.0,
+        "measuredNodeEnergyWh_trapezoid": 129.158
+      }
+    ]
+  },
+  "assumptionsAndLimits": [
+    "The public data license and attribution notice apply; this output contains derived aggregates and no source job, user, account, script, or node identifiers.",
+    "NLR describes each sampled Eagle GPU node as containing two CPUs and two GPUs. Whole-node iLO power includes the full node and is not GPU-only power.",
+    "The 15-minute resampling matches PowerFlex's interval, but erases sub-15-minute transients.",
+    "The accompanying PowerFlex replay has mixed results: the peak increases while the largest 15-minute ramp and ceiling-violation count decrease. This small replay does not establish generalizable optimizer savings, real SLA/deadline performance, facility-level impact, or company endorsement.",
+    "No price or carbon profile is joined; cost and emissions are not evaluated.",
+    "The scenario input estimates node idle baseline as the median meter reading from 15-minute intervals with no recorded job on the node. Job profiles are measured whole-node watts above that idle estimate, converted to MW.",
+    "Synthetic deadlines add up to 60 minutes after the observed finish (rounded to 15-minute intervals) and are capped at the next job release to preserve single-node non-overlap. The source has no contractual deadlines."
+  ],
+  "evaluationSettings": {
+    "powerCeilingMW": 0.00045835,
+    "maximum15MinuteRampMW": 4.3687e-05,
+    "objective": "stability",
+    "syntheticDeadlineSlackMinutes": 60,
+    "powerScope": "one representative GPU node; whole-node power"
+  },
+  "inputSha256": {
+    "jobsSource": "a8e66aa8c20a7cd3fec6bc48297130d3460b5e0c9e6bd96a974a882414cce619",
+    "extractedMeterCsv": "0cca31365fa002aa2eec0ecbb4cbed9a8468213ff3aea3a755b983365f2acabf"
+  }
+}

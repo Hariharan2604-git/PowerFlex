@@ -1,0 +1,669 @@
+{
+  "schemaVersion": "powerflex.broad-shadow-evaluation.v1",
+  "scenarioCount": 22,
+  "objective": "carbon-only; EIA-930 hourly estimated average consumption CO2 intensity repeated to 15-minute slots",
+  "priceSignal": "unavailable; no price objective or cost claim",
+  "deadlineStatus": "Sensitivity-only synthetic latest finish; source has no actual contractual/user deadlines.",
+  "recordedSchedulerReference": "Historical Slurm start times rounded to the nearest 15-minute interval",
+  "metrics": {
+    "medianPeakChangePercent": 0,
+    "medianRampChangePercent": 0,
+    "medianRegionalCarbonProxyChangePercent": 0,
+    "meanRegionalCarbonProxyChangePercent": 0.0012550504067573053,
+    "medianScheduledShiftMinutes": 0,
+    "carbonProxyImprovedCases": 2,
+    "carbonProxyWorsenedCases": 2,
+    "carbonProxyUnchangedCases": 18,
+    "syntheticDeadlineMisses": 0
+  },
+  "methodBoundary": "Independent one-job counterfactuals within historical node-day gaps; other measured activity is held fixed.",
+  "limitations": [
+    "One-job-at-a-time counterfactuals on one representative node; other measured activity stays fixed. This is not a full cluster or live scheduler run.",
+    "The historical Slurm schedule is the existing-scheduler reference; the PowerFlex heuristic is evaluated offline.",
+    "The 60-minute slack used in sensitivity cases is synthetic; real deadline compliance remains unevaluated.",
+    "Regional carbon proxy is an EIA estimate and is not site-meter or marginal carbon accounting.",
+    "No time-aligned site price was supplied; price savings are not measured.",
+    "The per-job increment is estimated from whole-node iLO power above a median idle estimate.",
+    "The heuristic does not guarantee a global optimum."
+  ],
+  "cases": [
+    {
+      "caseId": "CASE-0001",
+      "utcDate": "2019-12-10",
+      "objective": "carbon-only heuristic with regional estimated EIA intensity; price unavailable",
+      "baseline": {
+        "recordedStartHourRounded15m": null,
+        "peakPower_kW": 0.5104000000000001,
+        "max15MinuteRamp_kW": 0.06894545500000002,
+        "nodeEnergy_kWh": 10.305313131250005,
+        "regionalCarbonProxy_kgCO2": 6.725902069874175
+      },
+      "powerflex": {
+        "scheduledStartHour": null,
+        "syntheticLatestFinishHour": 16.5,
+        "peakPower_kW": 0.5104000000000001,
+        "max15MinuteRamp_kW": 0.06894545500000002,
+        "nodeEnergy_kWh": 10.305313131250005,
+        "regionalCarbonProxy_kgCO2": 6.725902069874175,
+        "meetsSyntheticLatestFinish": true,
+        "modelConstraintEvents": 10
+      },
+      "comparison": {
+        "scheduledShiftMinutesVsRecorded": 0,
+        "addedDelayMinutesVsEarliestRelease": 0,
+        "peakChangePercent": 0,
+        "rampChangePercent": 0,
+        "regionalCarbonProxyChangePercent": 0
+      }
+    },
+    {
+      "caseId": "CASE-0002",
+      "utcDate": "2019-12-11",
+      "objective": "carbon-only heuristic with regional estimated EIA intensity; price unavailable",
+      "baseline": {
+        "recordedStartHourRounded15m": null,
+        "peakPower_kW": 0.5593333330000001,
+        "max15MinuteRamp_kW": 0.14433333300000004,
+        "nodeEnergy_kWh": 10.133966667000003,
+        "regionalCarbonProxy_kgCO2": 6.157318147418847
+      },
+      "powerflex": {
+        "scheduledStartHour": null,
+        "syntheticLatestFinishHour": 18.25,
+        "peakPower_kW": 0.5593333330000001,
+        "max15MinuteRamp_kW": 0.14433333300000004,
+        "nodeEnergy_kWh": 10.133966667000003,
+        "regionalCarbonProxy_kgCO2": 6.157317939119751,
+        "meetsSyntheticLatestFinish": true,
+        "modelConstraintEvents": 10
+      },
+      "comparison": {
+        "scheduledShiftMinutesVsRecorded": 45,
+        "addedDelayMinutesVsEarliestRelease": 45,
+        "peakChangePercent": 0,
+        "rampChangePercent": 0,
+        "regionalCarbonProxyChangePercent": -0.000003382951655358546
+      }
+    },
+    {
+      "caseId": "CASE-0003",
+      "utcDate": "2019-12-11",
+      "objective": "carbon-only heuristic with regional estimated EIA intensity; price unavailable",
+      "baseline": {
+        "recordedStartHourRounded15m": null,
+        "peakPower_kW": 0.5593333330000001,
+        "max15MinuteRamp_kW": 0.14433333300000004,
+        "nodeEnergy_kWh": 10.133966667000003,
+        "regionalCarbonProxy_kgCO2": 6.157318147418847
+      },
+      "powerflex": {
+        "scheduledStartHour": null,
+        "syntheticLatestFinishHour": 19.25,
+        "peakPower_kW": 0.5593333330000001,
+        "max15MinuteRamp_kW": 0.14433333300000004,
+        "nodeEnergy_kWh": 10.133966667000003,
+        "regionalCarbonProxy_kgCO2": 6.157318147418847,
+        "meetsSyntheticLatestFinish": true,
+        "modelConstraintEvents": 10
+      },
+      "comparison": {
+        "scheduledShiftMinutesVsRecorded": 0,
+        "addedDelayMinutesVsEarliestRelease": 0,
+        "peakChangePercent": 0,
+        "rampChangePercent": 0,
+        "regionalCarbonProxyChangePercent": 0
+      }
+    },
+    {
+      "caseId": "CASE-0004",
+      "utcDate": "2019-12-11",
+      "objective": "carbon-only heuristic with regional estimated EIA intensity; price unavailable",
+      "baseline": {
+        "recordedStartHourRounded15m": null,
+        "peakPower_kW": 0.5593333330000001,
+        "max15MinuteRamp_kW": 0.14433333300000004,
+        "nodeEnergy_kWh": 10.133966667000003,
+        "regionalCarbonProxy_kgCO2": 6.157318147418847
+      },
+      "powerflex": {
+        "scheduledStartHour": null,
+        "syntheticLatestFinishHour": 21.75,
+        "peakPower_kW": 0.5593333330000001,
+        "max15MinuteRamp_kW": 0.14433333300000004,
+        "nodeEnergy_kWh": 10.133966667000003,
+        "regionalCarbonProxy_kgCO2": 6.157318147418847,
+        "meetsSyntheticLatestFinish": true,
+        "modelConstraintEvents": 10
+      },
+      "comparison": {
+        "scheduledShiftMinutesVsRecorded": 0,
+        "addedDelayMinutesVsEarliestRelease": 0,
+        "peakChangePercent": 0,
+        "rampChangePercent": 0,
+        "regionalCarbonProxyChangePercent": 0
+      }
+    },
+    {
+      "caseId": "CASE-0005",
+      "utcDate": "2019-12-17",
+      "objective": "carbon-only heuristic with regional estimated EIA intensity; price unavailable",
+      "baseline": {
+        "recordedStartHourRounded15m": null,
+        "peakPower_kW": 0.5396,
+        "max15MinuteRamp_kW": 0.122933333,
+        "nodeEnergy_kWh": 11.365933333000001,
+        "regionalCarbonProxy_kgCO2": 6.305237294703608
+      },
+      "powerflex": {
+        "scheduledStartHour": null,
+        "syntheticLatestFinishHour": 17.5,
+        "peakPower_kW": 0.5396,
+        "max15MinuteRamp_kW": 0.11772888900000007,
+        "nodeEnergy_kWh": 11.365933333,
+        "regionalCarbonProxy_kgCO2": 6.305406300607824,
+        "meetsSyntheticLatestFinish": true,
+        "modelConstraintEvents": 10
+      },
+      "comparison": {
+        "scheduledShiftMinutesVsRecorded": 45,
+        "addedDelayMinutesVsEarliestRelease": 45,
+        "peakChangePercent": 0,
+        "rampChangePercent": -4.233549903019332,
+        "regionalCarbonProxyChangePercent": 0.0026804051349088695
+      }
+    },
+    {
+      "caseId": "CASE-0006",
+      "utcDate": "2019-12-24",
+      "objective": "carbon-only heuristic with regional estimated EIA intensity; price unavailable",
+      "baseline": {
+        "recordedStartHourRounded15m": null,
+        "peakPower_kW": 0.470466667,
+        "max15MinuteRamp_kW": 0.046866667,
+        "nodeEnergy_kWh": 9.919533333250001,
+        "regionalCarbonProxy_kgCO2": 6.0435260647241185
+      },
+      "powerflex": {
+        "scheduledStartHour": null,
+        "syntheticLatestFinishHour": 7,
+        "peakPower_kW": 0.470466667,
+        "max15MinuteRamp_kW": 0.046866667,
+        "nodeEnergy_kWh": 9.919533333250003,
+        "regionalCarbonProxy_kgCO2": 6.0435260647241185,
+        "meetsSyntheticLatestFinish": true,
+        "modelConstraintEvents": 10
+      },
+      "comparison": {
+        "scheduledShiftMinutesVsRecorded": 0,
+        "addedDelayMinutesVsEarliestRelease": 0,
+        "peakChangePercent": 0,
+        "rampChangePercent": 0,
+        "regionalCarbonProxyChangePercent": 0
+      }
+    },
+    {
+      "caseId": "CASE-0007",
+      "utcDate": "2020-08-03",
+      "objective": "carbon-only heuristic with regional estimated EIA intensity; price unavailable",
+      "baseline": {
+        "recordedStartHourRounded15m": null,
+        "peakPower_kW": 0.475,
+        "max15MinuteRamp_kW": 0.06646666700000009,
+        "nodeEnergy_kWh": 9.970783332000005,
+        "regionalCarbonProxy_kgCO2": 4.375073482273572
+      },
+      "powerflex": {
+        "scheduledStartHour": null,
+        "syntheticLatestFinishHour": 12.75,
+        "peakPower_kW": 0.475,
+        "max15MinuteRamp_kW": 0.06646666700000009,
+        "nodeEnergy_kWh": 9.970783332000005,
+        "regionalCarbonProxy_kgCO2": 4.375073482273572,
+        "meetsSyntheticLatestFinish": true,
+        "modelConstraintEvents": 10
+      },
+      "comparison": {
+        "scheduledShiftMinutesVsRecorded": 0,
+        "addedDelayMinutesVsEarliestRelease": 0,
+        "peakChangePercent": 0,
+        "rampChangePercent": 0,
+        "regionalCarbonProxyChangePercent": 0
+      }
+    },
+    {
+      "caseId": "CASE-0008",
+      "utcDate": "2020-08-03",
+      "objective": "carbon-only heuristic with regional estimated EIA intensity; price unavailable",
+      "baseline": {
+        "recordedStartHourRounded15m": null,
+        "peakPower_kW": 0.475,
+        "max15MinuteRamp_kW": 0.066466667,
+        "nodeEnergy_kWh": 9.970783332000005,
+        "regionalCarbonProxy_kgCO2": 4.375073482273572
+      },
+      "powerflex": {
+        "scheduledStartHour": null,
+        "syntheticLatestFinishHour": 17,
+        "peakPower_kW": 0.475,
+        "max15MinuteRamp_kW": 0.066466667,
+        "nodeEnergy_kWh": 9.970783332000005,
+        "regionalCarbonProxy_kgCO2": 4.375073482273572,
+        "meetsSyntheticLatestFinish": true,
+        "modelConstraintEvents": 10
+      },
+      "comparison": {
+        "scheduledShiftMinutesVsRecorded": 0,
+        "addedDelayMinutesVsEarliestRelease": 0,
+        "peakChangePercent": 0,
+        "rampChangePercent": 0,
+        "regionalCarbonProxyChangePercent": 0
+      }
+    },
+    {
+      "caseId": "CASE-0009",
+      "utcDate": "2020-08-03",
+      "objective": "carbon-only heuristic with regional estimated EIA intensity; price unavailable",
+      "baseline": {
+        "recordedStartHourRounded15m": null,
+        "peakPower_kW": 0.475,
+        "max15MinuteRamp_kW": 0.066466667,
+        "nodeEnergy_kWh": 9.970783332250006,
+        "regionalCarbonProxy_kgCO2": 4.375073482384852
+      },
+      "powerflex": {
+        "scheduledStartHour": null,
+        "syntheticLatestFinishHour": 19.75,
+        "peakPower_kW": 0.475,
+        "max15MinuteRamp_kW": 0.066466667,
+        "nodeEnergy_kWh": 9.970783332250006,
+        "regionalCarbonProxy_kgCO2": 4.375073482384852,
+        "meetsSyntheticLatestFinish": true,
+        "modelConstraintEvents": 10
+      },
+      "comparison": {
+        "scheduledShiftMinutesVsRecorded": 0,
+        "addedDelayMinutesVsEarliestRelease": 0,
+        "peakChangePercent": 0,
+        "rampChangePercent": 0,
+        "regionalCarbonProxyChangePercent": 0
+      }
+    },
+    {
+      "caseId": "CASE-0010",
+      "utcDate": "2020-08-03",
+      "objective": "carbon-only heuristic with regional estimated EIA intensity; price unavailable",
+      "baseline": {
+        "recordedStartHourRounded15m": null,
+        "peakPower_kW": 0.721066667,
+        "max15MinuteRamp_kW": 0.24193333299999997,
+        "nodeEnergy_kWh": 13.521600001250007,
+        "regionalCarbonProxy_kgCO2": 5.927098717738461
+      },
+      "powerflex": {
+        "scheduledStartHour": null,
+        "syntheticLatestFinishHour": 18.75,
+        "peakPower_kW": 0.721066667,
+        "max15MinuteRamp_kW": 0.24193333299999997,
+        "nodeEnergy_kWh": 13.521600001250007,
+        "regionalCarbonProxy_kgCO2": 5.927098717738461,
+        "meetsSyntheticLatestFinish": true,
+        "modelConstraintEvents": 10
+      },
+      "comparison": {
+        "scheduledShiftMinutesVsRecorded": 0,
+        "addedDelayMinutesVsEarliestRelease": 0,
+        "peakChangePercent": 0,
+        "rampChangePercent": 0,
+        "regionalCarbonProxyChangePercent": 0
+      }
+    },
+    {
+      "caseId": "CASE-0011",
+      "utcDate": "2020-08-05",
+      "objective": "carbon-only heuristic with regional estimated EIA intensity; price unavailable",
+      "baseline": {
+        "recordedStartHourRounded15m": null,
+        "peakPower_kW": 0.4798,
+        "max15MinuteRamp_kW": 0.037666666999999994,
+        "nodeEnergy_kWh": 10.127149999499999,
+        "regionalCarbonProxy_kgCO2": 5.562001291637023
+      },
+      "powerflex": {
+        "scheduledStartHour": null,
+        "syntheticLatestFinishHour": 11,
+        "peakPower_kW": 0.4798,
+        "max15MinuteRamp_kW": 0.037666666999999994,
+        "nodeEnergy_kWh": 10.127149999499999,
+        "regionalCarbonProxy_kgCO2": 5.562001291637023,
+        "meetsSyntheticLatestFinish": true,
+        "modelConstraintEvents": 10
+      },
+      "comparison": {
+        "scheduledShiftMinutesVsRecorded": 0,
+        "addedDelayMinutesVsEarliestRelease": 0,
+        "peakChangePercent": 0,
+        "rampChangePercent": 0,
+        "regionalCarbonProxyChangePercent": 0
+      }
+    },
+    {
+      "caseId": "CASE-0012",
+      "utcDate": "2020-08-06",
+      "objective": "carbon-only heuristic with regional estimated EIA intensity; price unavailable",
+      "baseline": {
+        "recordedStartHourRounded15m": null,
+        "peakPower_kW": 0.679666667,
+        "max15MinuteRamp_kW": 0.18413333300000004,
+        "nodeEnergy_kWh": 10.749840475749998,
+        "regionalCarbonProxy_kgCO2": 5.724280341669905
+      },
+      "powerflex": {
+        "scheduledStartHour": null,
+        "syntheticLatestFinishHour": 17,
+        "peakPower_kW": 0.679666667,
+        "max15MinuteRamp_kW": 0.18413333300000004,
+        "nodeEnergy_kWh": 10.749840475749998,
+        "regionalCarbonProxy_kgCO2": 5.724280341669905,
+        "meetsSyntheticLatestFinish": true,
+        "modelConstraintEvents": 10
+      },
+      "comparison": {
+        "scheduledShiftMinutesVsRecorded": 0,
+        "addedDelayMinutesVsEarliestRelease": 0,
+        "peakChangePercent": 0,
+        "rampChangePercent": 0,
+        "regionalCarbonProxyChangePercent": 0
+      }
+    },
+    {
+      "caseId": "CASE-0013",
+      "utcDate": "2020-08-09",
+      "objective": "carbon-only heuristic with regional estimated EIA intensity; price unavailable",
+      "baseline": {
+        "recordedStartHourRounded15m": null,
+        "peakPower_kW": 0.566,
+        "max15MinuteRamp_kW": 0.185066667,
+        "nodeEnergy_kWh": 10.483316666999997,
+        "regionalCarbonProxy_kgCO2": 5.770200022624664
+      },
+      "powerflex": {
+        "scheduledStartHour": null,
+        "syntheticLatestFinishHour": 16.75,
+        "peakPower_kW": 0.566,
+        "max15MinuteRamp_kW": 0.185066667,
+        "nodeEnergy_kWh": 10.483316666999997,
+        "regionalCarbonProxy_kgCO2": 5.770200022624664,
+        "meetsSyntheticLatestFinish": true,
+        "modelConstraintEvents": 10
+      },
+      "comparison": {
+        "scheduledShiftMinutesVsRecorded": 0,
+        "addedDelayMinutesVsEarliestRelease": 0,
+        "peakChangePercent": 0,
+        "rampChangePercent": 0,
+        "regionalCarbonProxyChangePercent": 0
+      }
+    },
+    {
+      "caseId": "CASE-0014",
+      "utcDate": "2020-08-11",
+      "objective": "carbon-only heuristic with regional estimated EIA intensity; price unavailable",
+      "baseline": {
+        "recordedStartHourRounded15m": null,
+        "peakPower_kW": 0.884466667,
+        "max15MinuteRamp_kW": 0.33999999900000005,
+        "nodeEnergy_kWh": 10.217067857249999,
+        "regionalCarbonProxy_kgCO2": 5.341709283050454
+      },
+      "powerflex": {
+        "scheduledStartHour": null,
+        "syntheticLatestFinishHour": 16.5,
+        "peakPower_kW": 0.884466667,
+        "max15MinuteRamp_kW": 0.33999999900000005,
+        "nodeEnergy_kWh": 10.217067857249999,
+        "regionalCarbonProxy_kgCO2": 5.341709283050454,
+        "meetsSyntheticLatestFinish": true,
+        "modelConstraintEvents": 10
+      },
+      "comparison": {
+        "scheduledShiftMinutesVsRecorded": 0,
+        "addedDelayMinutesVsEarliestRelease": 0,
+        "peakChangePercent": 0,
+        "rampChangePercent": 0,
+        "regionalCarbonProxyChangePercent": 0
+      }
+    },
+    {
+      "caseId": "CASE-0015",
+      "utcDate": "2020-08-12",
+      "objective": "carbon-only heuristic with regional estimated EIA intensity; price unavailable",
+      "baseline": {
+        "recordedStartHourRounded15m": null,
+        "peakPower_kW": 0.453733333,
+        "max15MinuteRamp_kW": 0.022533333000000006,
+        "nodeEnergy_kWh": 10.124883333749999,
+        "regionalCarbonProxy_kgCO2": 4.8704427815634475
+      },
+      "powerflex": {
+        "scheduledStartHour": null,
+        "syntheticLatestFinishHour": 14,
+        "peakPower_kW": 0.453733333,
+        "max15MinuteRamp_kW": 0.022533333000000006,
+        "nodeEnergy_kWh": 10.124883333749999,
+        "regionalCarbonProxy_kgCO2": 4.8704427815634475,
+        "meetsSyntheticLatestFinish": true,
+        "modelConstraintEvents": 10
+      },
+      "comparison": {
+        "scheduledShiftMinutesVsRecorded": 0,
+        "addedDelayMinutesVsEarliestRelease": 0,
+        "peakChangePercent": 0,
+        "rampChangePercent": 0,
+        "regionalCarbonProxyChangePercent": 0
+      }
+    },
+    {
+      "caseId": "CASE-0016",
+      "utcDate": "2020-08-19",
+      "objective": "carbon-only heuristic with regional estimated EIA intensity; price unavailable",
+      "baseline": {
+        "recordedStartHourRounded15m": null,
+        "peakPower_kW": 0.4326,
+        "max15MinuteRamp_kW": 0.01153333300000001,
+        "nodeEnergy_kWh": 10.13537742775,
+        "regionalCarbonProxy_kgCO2": 5.836357798701264
+      },
+      "powerflex": {
+        "scheduledStartHour": null,
+        "syntheticLatestFinishHour": 12.25,
+        "peakPower_kW": 0.4326,
+        "max15MinuteRamp_kW": 0.01153333300000001,
+        "nodeEnergy_kWh": 10.13537742775,
+        "regionalCarbonProxy_kgCO2": 5.836357798701264,
+        "meetsSyntheticLatestFinish": true,
+        "modelConstraintEvents": 10
+      },
+      "comparison": {
+        "scheduledShiftMinutesVsRecorded": 0,
+        "addedDelayMinutesVsEarliestRelease": 0,
+        "peakChangePercent": 0,
+        "rampChangePercent": 0,
+        "regionalCarbonProxyChangePercent": 0
+      }
+    },
+    {
+      "caseId": "CASE-0017",
+      "utcDate": "2020-08-22",
+      "objective": "carbon-only heuristic with regional estimated EIA intensity; price unavailable",
+      "baseline": {
+        "recordedStartHourRounded15m": null,
+        "peakPower_kW": 0.554133333,
+        "max15MinuteRamp_kW": 0.11226666700000001,
+        "nodeEnergy_kWh": 10.769450000249998,
+        "regionalCarbonProxy_kgCO2": 6.55770341340275
+      },
+      "powerflex": {
+        "scheduledStartHour": null,
+        "syntheticLatestFinishHour": 4,
+        "peakPower_kW": 0.554133333,
+        "max15MinuteRamp_kW": 0.11226666700000001,
+        "nodeEnergy_kWh": 10.76945000025,
+        "regionalCarbonProxy_kgCO2": 6.55770341340275,
+        "meetsSyntheticLatestFinish": true,
+        "modelConstraintEvents": 10
+      },
+      "comparison": {
+        "scheduledShiftMinutesVsRecorded": 0,
+        "addedDelayMinutesVsEarliestRelease": 0,
+        "peakChangePercent": 0,
+        "rampChangePercent": 0,
+        "regionalCarbonProxyChangePercent": 0
+      }
+    },
+    {
+      "caseId": "CASE-0018",
+      "utcDate": "2020-08-24",
+      "objective": "carbon-only heuristic with regional estimated EIA intensity; price unavailable",
+      "baseline": {
+        "recordedStartHourRounded15m": null,
+        "peakPower_kW": 0.6338,
+        "max15MinuteRamp_kW": 0.12800000000000009,
+        "nodeEnergy_kWh": 12.844478571500005,
+        "regionalCarbonProxy_kgCO2": 6.946624535211997
+      },
+      "powerflex": {
+        "scheduledStartHour": null,
+        "syntheticLatestFinishHour": 10.5,
+        "peakPower_kW": 0.6338,
+        "max15MinuteRamp_kW": 0.12800000000000009,
+        "nodeEnergy_kWh": 12.844478571500005,
+        "regionalCarbonProxy_kgCO2": 6.946624535211997,
+        "meetsSyntheticLatestFinish": true,
+        "modelConstraintEvents": 10
+      },
+      "comparison": {
+        "scheduledShiftMinutesVsRecorded": 0,
+        "addedDelayMinutesVsEarliestRelease": 0,
+        "peakChangePercent": 0,
+        "rampChangePercent": 0,
+        "regionalCarbonProxyChangePercent": 0
+      }
+    },
+    {
+      "caseId": "CASE-0019",
+      "utcDate": "2020-08-24",
+      "objective": "carbon-only heuristic with regional estimated EIA intensity; price unavailable",
+      "baseline": {
+        "recordedStartHourRounded15m": null,
+        "peakPower_kW": 0.6338,
+        "max15MinuteRamp_kW": 0.12800000000000009,
+        "nodeEnergy_kWh": 12.844478571500005,
+        "regionalCarbonProxy_kgCO2": 6.946624535211997
+      },
+      "powerflex": {
+        "scheduledStartHour": null,
+        "syntheticLatestFinishHour": 13.5,
+        "peakPower_kW": 0.6338,
+        "max15MinuteRamp_kW": 0.1302,
+        "nodeEnergy_kWh": 12.844478571500005,
+        "regionalCarbonProxy_kgCO2": 6.94935336838361,
+        "meetsSyntheticLatestFinish": true,
+        "modelConstraintEvents": 9
+      },
+      "comparison": {
+        "scheduledShiftMinutesVsRecorded": 15,
+        "addedDelayMinutesVsEarliestRelease": 15,
+        "peakChangePercent": 0,
+        "rampChangePercent": 1.718749999999956,
+        "regionalCarbonProxyChangePercent": 0.03928286548064596
+      }
+    },
+    {
+      "caseId": "CASE-0020",
+      "utcDate": "2020-08-24",
+      "objective": "carbon-only heuristic with regional estimated EIA intensity; price unavailable",
+      "baseline": {
+        "recordedStartHourRounded15m": null,
+        "peakPower_kW": 0.733,
+        "max15MinuteRamp_kW": 0.221066667,
+        "nodeEnergy_kWh": 13.3435964285,
+        "regionalCarbonProxy_kgCO2": 7.223313751736638
+      },
+      "powerflex": {
+        "scheduledStartHour": null,
+        "syntheticLatestFinishHour": 8,
+        "peakPower_kW": 0.733,
+        "max15MinuteRamp_kW": 0.221066667,
+        "nodeEnergy_kWh": 13.3435964285,
+        "regionalCarbonProxy_kgCO2": 7.222277294430494,
+        "meetsSyntheticLatestFinish": true,
+        "modelConstraintEvents": 10
+      },
+      "comparison": {
+        "scheduledShiftMinutesVsRecorded": 15,
+        "addedDelayMinutesVsEarliestRelease": 15,
+        "peakChangePercent": 0,
+        "rampChangePercent": 0,
+        "regionalCarbonProxyChangePercent": -0.014348778715238755
+      }
+    },
+    {
+      "caseId": "CASE-0021",
+      "utcDate": "2020-08-25",
+      "objective": "carbon-only heuristic with regional estimated EIA intensity; price unavailable",
+      "baseline": {
+        "recordedStartHourRounded15m": null,
+        "peakPower_kW": 0.579666667,
+        "max15MinuteRamp_kW": 0.14266666700000005,
+        "nodeEnergy_kWh": 12.185266665750003,
+        "regionalCarbonProxy_kgCO2": 6.7262454089192225
+      },
+      "powerflex": {
+        "scheduledStartHour": null,
+        "syntheticLatestFinishHour": 14.25,
+        "peakPower_kW": 0.579666667,
+        "max15MinuteRamp_kW": 0.14266666700000005,
+        "nodeEnergy_kWh": 12.185266665750003,
+        "regionalCarbonProxy_kgCO2": 6.7262454089192225,
+        "meetsSyntheticLatestFinish": true,
+        "modelConstraintEvents": 8
+      },
+      "comparison": {
+        "scheduledShiftMinutesVsRecorded": 0,
+        "addedDelayMinutesVsEarliestRelease": 0,
+        "peakChangePercent": 0,
+        "rampChangePercent": 0,
+        "regionalCarbonProxyChangePercent": 0
+      }
+    },
+    {
+      "caseId": "CASE-0022",
+      "utcDate": "2020-08-31",
+      "objective": "carbon-only heuristic with regional estimated EIA intensity; price unavailable",
+      "baseline": {
+        "recordedStartHourRounded15m": null,
+        "peakPower_kW": 0.508,
+        "max15MinuteRamp_kW": 0.041400000000000034,
+        "nodeEnergy_kWh": 10.838933334000004,
+        "regionalCarbonProxy_kgCO2": 5.430041770013673
+      },
+      "powerflex": {
+        "scheduledStartHour": null,
+        "syntheticLatestFinishHour": 12.25,
+        "peakPower_kW": 0.508,
+        "max15MinuteRamp_kW": 0.041400000000000034,
+        "nodeEnergy_kWh": 10.838933334000004,
+        "regionalCarbonProxy_kgCO2": 5.430041770013673,
+        "meetsSyntheticLatestFinish": true,
+        "modelConstraintEvents": 10
+      },
+      "comparison": {
+        "scheduledShiftMinutesVsRecorded": 0,
+        "addedDelayMinutesVsEarliestRelease": 0,
+        "peakChangePercent": 0,
+        "rampChangePercent": 0,
+        "regionalCarbonProxyChangePercent": 0
+      }
+    }
+  ]
+}

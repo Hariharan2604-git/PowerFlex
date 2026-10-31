@@ -1,0 +1,61 @@
+{
+  "schemaVersion": "powerflex.real-data-optimizer-eval.v1",
+  "scenario": "NLR Eagle single-node measured trace replay",
+  "dataProvenance": "Public NLR Eagle anonymized job events paired with measured NLR iLO whole-node power. One-node trace; no company data.",
+  "settings": {
+    "powerCeilingMW": 0.00045835,
+    "maximum15MinuteRampMW": 0.000043687,
+    "objective": "stability",
+    "syntheticDeadlineSlackMinutes": 60,
+    "powerScope": "one representative GPU node; whole-node power"
+  },
+  "referenceSchedule": {
+    "peakPower_kW": 0.559333,
+    "max15MinuteRamp_kW": 0.144333,
+    "powerCeilingBreaches": 5,
+    "rampBreaches": 5
+  },
+  "powerflexSchedule": {
+    "peakPower_kW": 0.614666,
+    "max15MinuteRamp_kW": 0.126605,
+    "powerCeilingBreaches": 3,
+    "rampBreaches": 5,
+    "deadlineMisses": 0,
+    "energy_kWh": 10.133967
+  },
+  "comparison": {
+    "modeledPeakChangePercent": 9.8927,
+    "modeledRampChangePercent": -12.2827,
+    "baselineReconstructionRmse_kW": 0,
+    "baselineReconstructionMethod": "Observed 15-minute mean minus estimated selected-job profiles; zero RMSE is true by construction and is not independent model-accuracy evidence.",
+    "maxAbsoluteReconstructionError_kW": 0,
+    "jobStartChanges": [
+      {
+        "id": "GPU-01",
+        "referenceStartHour": 16.75,
+        "powerflexStartHour": 16.75,
+        "shiftMinutes": 0
+      },
+      {
+        "id": "GPU-02",
+        "referenceStartHour": 18.25,
+        "powerflexStartHour": 19,
+        "shiftMinutes": 45
+      },
+      {
+        "id": "GPU-03",
+        "referenceStartHour": 20.25,
+        "powerflexStartHour": 20.25,
+        "shiftMinutes": 0
+      }
+    ]
+  },
+  "limits": [
+    "One representative Eagle GPU node, not a facility or cluster-wide result.",
+    "Power profiles estimate whole-node load above a median idle estimate; the observed-start reference is reconstructed by subtracting those same estimated job profiles, so reconstruction RMSE is zero by construction and not independent model validation.",
+    "Deadline windows add up to 60 minutes after observed completion and are synthetic; source records have no contractual deadlines.",
+    "Data-derived ceiling and ramp thresholds are evaluation thresholds, not engineering operating limits.",
+    "The source contains no time-varying electricity-price or carbon-intensity profiles; those objectives are disabled.",
+    "Only 3 completed, single-node GPU jobs are matched in the selected day; this is a smoke-scale case study, not statistical evidence."
+  ]
+}

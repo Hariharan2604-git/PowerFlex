@@ -1,0 +1,1302 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#0b1422">
+  <meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'sha256-ii89bXcm09RCgOujlAwlOwOtuPlAmb/vnis3ZhiJp28='; style-src 'unsafe-inline'; img-src 'self' data:; connect-src 'none'; object-src 'none'; base-uri 'none'; form-action 'none'">
+  <title>PowerFlex — AI workload power scheduler</title>
+  <style>
+    :root {
+      color-scheme: light;
+      --ink: #142338;
+      --muted: #6d7b8d;
+      --line: #e5eaf0;
+      --paper: #f4f7fa;
+      --white: #fff;
+      --navy: #0b1422;
+      --navy-2: #111f31;
+      --teal: #06a88c;
+      --teal-dark: #087e70;
+      --teal-pale: #e7f8f4;
+      --blue: #5688f5;
+      --orange: #df784b;
+      --red: #df5b64;
+      --shadow: 0 10px 32px rgba(23, 42, 67, .055);
+      font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    }
+    * { box-sizing: border-box; }
+    body { margin: 0; background: var(--paper); color: var(--ink); min-width: 320px; }
+    button, input { font: inherit; }
+    button { cursor: pointer; }
+    .topbar { height: 66px; background: var(--navy); display: flex; align-items: center; padding: 0 34px; color: #eaf1fa; gap: 12px; }
+    .brand-mark { width: 31px; height: 31px; display: grid; place-items: center; border-radius: 9px; background: #153c45; color: #71ead0; }
+    .brand { font-size: 15px; font-weight: 750; letter-spacing: -.02em; }
+    .brand span { color: #71ead0; }
+    .top-divider { width: 1px; height: 22px; background: #29384a; margin: 0 7px; }
+    .top-product { color: #a9b6c8; font-size: 12px; }
+    .top-right { margin-left: auto; display: flex; align-items: center; gap: 18px; color: #aab7c8; font-size: 11px; }
+    .live-dot { width: 7px; height: 7px; display: inline-block; border-radius: 50%; background: #46d7b8; box-shadow: 0 0 0 4px rgba(70, 215, 184, .12); margin-right: 8px; }
+    .shell { max-width: 1470px; padding: 35px 34px 28px; margin: 0 auto; }
+    .hero { display: flex; align-items: flex-end; justify-content: space-between; gap: 24px; margin-bottom: 25px; }
+    .eyebrow { color: var(--teal-dark); font-size: 10px; font-weight: 800; letter-spacing: .14em; text-transform: uppercase; margin-bottom: 9px; }
+    h1 { margin: 0; font-size: clamp(27px, 3vw, 36px); letter-spacing: -.045em; line-height: 1.1; font-weight: 720; }
+    .hero p { color: var(--muted); margin: 9px 0 0; font-size: 13px; line-height: 1.55; max-width: 720px; }
+    .sim-badge { background: #eaf0f5; color: #596a7e; padding: 9px 12px; border-radius: 8px; font-size: 10px; font-weight: 700; white-space: nowrap; display: inline-flex; align-items: center; gap: 7px; }
+    .sim-badge svg { color: #59768a; }
+    .layout { display: grid; grid-template-columns: 284px minmax(0, 1fr); gap: 19px; align-items: start; }
+    .panel { background: var(--white); border: 1px solid var(--line); border-radius: 12px; box-shadow: var(--shadow); }
+    .config { overflow: hidden; }
+    .config-head { padding: 19px 20px 16px; border-bottom: 1px solid var(--line); }
+    .config-head h2, .panel-title { margin: 0; font-size: 13px; letter-spacing: -.01em; font-weight: 740; }
+    .config-head p { color: var(--muted); font-size: 11px; margin: 5px 0 0; }
+    .config-body { padding: 18px 20px 19px; }
+    .field-label { display: flex; align-items: center; justify-content: space-between; gap: 8px; font-size: 11px; font-weight: 680; color: #34465d; }
+    .field-label output { font-size: 12px; font-weight: 780; color: var(--teal-dark); font-variant-numeric: tabular-nums; }
+    input[type="range"] { width: 100%; accent-color: var(--teal); margin: 13px 0 3px; }
+    .range-hints { display: flex; justify-content: space-between; color: #9aa6b4; font-size: 9px; }
+    .field-note { color: var(--muted); font-size: 10px; line-height: 1.5; margin: 9px 0 20px; }
+    .field-select { width: 100%; margin-top: 8px; padding: 9px 10px; color: #30445b; background: #fbfcfd; border: 1px solid #dfe6ed; border-radius: 7px; font-size: 10px; outline: none; }
+    .field-select:focus { border-color: #71cdb9; box-shadow: 0 0 0 3px rgba(6,168,140,.1); }
+    .control-block { margin: 16px 0 18px; }
+    .compact-note { color: #8492a2; font-size: 9px; line-height: 1.45; margin: 6px 0 0; }
+    .file-actions { display: grid; grid-template-columns: 1fr 1fr; gap: 7px; margin-top: 9px; }
+    .file-actions .outline-btn { justify-content: center; padding: 8px 5px; font-size: 8px; }
+    .file-input { display: none; }
+    .security-stamp { display: flex; align-items: flex-start; gap: 7px; color: #527b70; background: #edf8f4; border: 1px solid #d9eee6; border-radius: 7px; padding: 8px 9px; margin-top: 10px; font-size: 8px; line-height: 1.45; }
+    .security-stamp svg { flex: 0 0 auto; margin-top: 1px; }
+    .divider { border: 0; border-top: 1px solid var(--line); margin: 17px 0; }
+    .setting-row { display: flex; align-items: flex-start; gap: 10px; margin: 0 0 16px; }
+    .setting-icon { flex: 0 0 28px; height: 28px; display: grid; place-items: center; border-radius: 8px; background: #eef4f8; color: #5d7188; }
+    .setting-copy strong { display: block; color: #35475d; font-size: 10px; font-weight: 700; }
+    .setting-copy span { display: block; color: #8290a0; font-size: 9px; line-height: 1.45; margin-top: 3px; }
+    .run-btn { width: 100%; border: 0; border-radius: 8px; color: white; background: #098d7c; padding: 12px 14px; font-size: 11px; font-weight: 750; letter-spacing: .01em; display: flex; align-items: center; justify-content: center; gap: 8px; transition: background .15s, transform .15s; }
+    .run-btn:hover { background: #087c6d; transform: translateY(-1px); }
+    .run-btn:active { transform: translateY(0); }
+    .last-run { color: #9aa6b4; font-size: 9px; text-align: center; margin-top: 9px; min-height: 13px; }
+    .notice { margin-top: 13px; padding: 11px 12px; background: #f5f8fa; border-radius: 8px; color: #748398; font-size: 9px; line-height: 1.55; }
+    .notice b { color: #54667a; }
+    .dashboard { min-width: 0; display: grid; gap: 15px; }
+    .metrics { display: grid; grid-template-columns: repeat(6, minmax(0, 1fr)); gap: 9px; }
+    .constraint-status { display: flex; align-items: flex-start; gap: 9px; margin: 10px 0; padding: 10px 13px; border: 1px solid #bfe5d8; border-radius: 10px; background: #eff9f5; color: #286455; font-size: 10px; line-height: 1.5; }
+    .constraint-status.warn { border-color: #f0d5b9; background: #fff8f0; color: #8b562a; }
+    .constraint-status b { display: block; font-size: 11px; }
+    .constraint-status small { display: block; color: #718276; font-size: 9px; }
+    .constraint-status.warn small { color: #8b7865; }
+    .constraint-status svg { flex: 0 0 auto; margin-top: 1px; }
+    .metric { background: white; border: 1px solid var(--line); border-radius: 11px; padding: 14px 15px 13px; box-shadow: var(--shadow); min-width: 0; }
+    .metric-top { display: flex; align-items: center; justify-content: space-between; color: #7c8a9b; font-size: 9px; font-weight: 650; gap: 6px; }
+    .metric-icon { color: #8da0b3; flex: 0 0 auto; }
+    .metric-value { margin-top: 9px; font-size: 23px; line-height: 1; letter-spacing: -.04em; font-weight: 760; font-variant-numeric: tabular-nums; color: #172941; white-space: nowrap; }
+    .metric-value small { font-size: 11px; font-weight: 620; letter-spacing: 0; color: #8190a2; margin-left: 2px; }
+    .metric-foot { margin-top: 7px; font-size: 9px; color: #8a97a7; min-height: 13px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .metric-foot.good { color: var(--teal-dark); font-weight: 650; }
+    .metric-foot.warn { color: #b56a31; font-weight: 650; }
+    .chart-panel { padding: 18px 20px 13px; }
+    .panel-heading { display: flex; justify-content: space-between; align-items: flex-start; gap: 15px; }
+    .panel-heading p { margin: 5px 0 0; font-size: 10px; color: var(--muted); }
+    .chart-actions { display: flex; gap: 8px; align-items: center; }
+    .outline-btn { background: white; color: #63758b; border: 1px solid #dce4ec; border-radius: 7px; padding: 7px 10px; font-size: 9px; font-weight: 680; display: inline-flex; align-items: center; gap: 6px; }
+    .outline-btn:hover { background: #f6fafb; border-color: #b9cbd4; color: #344a5e; }
+    .canvas-wrap { height: 256px; margin: 15px 0 6px; position: relative; }
+    canvas { display: block; width: 100%; height: 100%; outline: none; }
+    canvas:focus-visible { box-shadow: inset 0 0 0 2px rgba(6,168,140,.35); border-radius: 5px; }
+    .chart-tooltip { display: none; position: absolute; z-index: 2; pointer-events: none; min-width: 150px; padding: 9px 10px; color: #e8f0f6; background: rgba(13, 30, 47, .94); border: 1px solid rgba(255,255,255,.12); border-radius: 7px; box-shadow: 0 7px 20px rgba(13,31,50,.2); font-size: 9px; line-height: 1.55; white-space: pre; }
+    .chart-tooltip strong { color: #72e0c4; font-size: 10px; }
+    .playback-bar { display: grid; grid-template-columns: auto minmax(100px,1fr) auto; align-items: center; gap: 11px; border-top: 1px solid #edf0f3; padding-top: 11px; margin-top: 9px; }
+    .play-btn { border: 1px solid #dce6e8; color: #087e70; background: #f6fbfa; border-radius: 7px; padding: 7px 10px; font-size: 9px; font-weight: 720; white-space: nowrap; }
+    .play-btn:hover { background: #e9f7f3; }
+    .time-scrubber { width: 100%; accent-color: var(--teal); margin: 0; }
+    .playback-readout { color: #607287; font-size: 9px; font-weight: 680; font-variant-numeric: tabular-nums; white-space: nowrap; }
+    .playback-detail { grid-column: 1 / -1; color: #8693a2; font-size: 8px; margin-top: -4px; min-height: 12px; }
+    .chart-legend { display: flex; align-items: center; justify-content: center; flex-wrap: wrap; gap: 19px; color: #718095; font-size: 9px; }
+    .legend-item { display: inline-flex; align-items: center; gap: 6px; }
+    .legend-line { width: 17px; height: 2px; background: var(--teal); border-radius: 3px; }
+    .legend-line.baseline { height: 0; background: none; border-top: 2px dashed #8fa0b1; }
+    .legend-line.cap { height: 0; background: none; border-top: 1px dashed var(--red); }
+    .lower-grid { display: grid; grid-template-columns: minmax(0, 1.5fr) minmax(240px, .9fr); gap: 15px; }
+    .timeline-panel, .insight-panel { padding: 17px 19px; min-width: 0; }
+    .timeline-head { display: flex; align-items: flex-start; justify-content: space-between; gap: 10px; }
+    .timeline-head p { color: var(--muted); font-size: 9px; margin: 5px 0 0; }
+    .segmented { display: inline-flex; padding: 3px; border: 1px solid #e4eaf0; background: #f7f9fb; border-radius: 7px; gap: 2px; }
+    .segmented button { border: 0; border-radius: 5px; color: #79879a; background: transparent; padding: 5px 8px; font-size: 8px; font-weight: 680; }
+    .segmented button.active { color: #087e70; background: white; box-shadow: 0 1px 3px rgba(22, 48, 67, .1); }
+    .timeline-axis { display: flex; justify-content: space-between; margin: 17px 0 6px 71px; color: #9aa6b4; font-size: 8px; }
+    .job-list { display: grid; gap: 7px; max-height: 246px; overflow: auto; padding: 2px 2px 2px 0; }
+    .job-row { display: grid; grid-template-columns: 62px minmax(0,1fr); gap: 9px; align-items: center; min-height: 13px; }
+    .job-row.active .job-name { color: #087e70; }
+    .job-row.active .job-track { outline: 1px solid rgba(6,168,140,.34); background: #edf8f5; }
+    .job-name { color: #6f7e91; font-size: 8px; font-weight: 680; font-variant-numeric: tabular-nums; }
+    .job-track { position: relative; height: 11px; background: #f2f5f7; border-radius: 3px; overflow: hidden; }
+    .job-window { position: absolute; top: 0; bottom: 0; background: #e8edf2; border-left: 1px solid #cfd8e1; border-right: 1px solid #cfd8e1; }
+    .job-wait { position: absolute; top: 4px; height: 3px; background: #b9c4d0; opacity: .65; }
+    .job-bar { position: absolute; top: 1px; height: 9px; min-width: 4px; border-radius: 3px; background: linear-gradient(90deg, #17b99c, #44d0ae); box-shadow: 0 1px 2px rgba(3, 142, 118, .22); }
+    .job-bar.baseline { background: linear-gradient(90deg, #8193a5, #aab7c4); box-shadow: none; }
+    .job-bar.late { background: linear-gradient(90deg, #db8b51, #efb56c); }
+    .timeline-foot { color: #98a4b1; font-size: 8px; margin-top: 10px; }
+    .insight-panel { background: #f4fbf9; border-color: #dbeee9; box-shadow: none; }
+    .insight-label { color: #07816f; font-size: 9px; font-weight: 780; letter-spacing: .1em; text-transform: uppercase; display: flex; align-items: center; gap: 6px; }
+    .insight-text { color: #29445a; font-size: 12px; line-height: 1.55; margin: 11px 0 15px; font-weight: 650; }
+    .insight-text strong { color: #087e70; }
+    .insight-stats { border-top: 1px solid #dcefe9; padding-top: 12px; display: grid; gap: 9px; }
+    .insight-stat { display: flex; align-items: center; justify-content: space-between; color: #728699; font-size: 9px; gap: 8px; }
+    .insight-stat b { color: #324d60; font-size: 9px; font-weight: 740; white-space: nowrap; }
+    .security-panel { background: white; border: 1px solid var(--line); border-radius: 11px; box-shadow: var(--shadow); overflow: hidden; }
+    .security-panel summary { cursor: pointer; list-style: none; display: flex; align-items: center; justify-content: space-between; gap: 14px; padding: 14px 17px; color: #30445b; font-size: 11px; font-weight: 740; }
+    .security-panel summary::-webkit-details-marker { display: none; }
+    .security-panel summary::after { content: '+'; color: var(--teal-dark); font-size: 17px; font-weight: 500; }
+    .security-panel[open] summary::after { content: '−'; }
+    .security-summary-copy { display: flex; align-items: center; gap: 9px; }
+    .security-summary-copy small { color: #8290a0; font-size: 9px; font-weight: 500; }
+    .security-content { border-top: 1px solid #edf0f3; padding: 15px 17px 17px; display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
+    .security-content h3 { margin: 0 0 8px; color: #087e70; font-size: 9px; letter-spacing: .08em; text-transform: uppercase; }
+    .security-content ul { margin: 0; padding-left: 16px; color: #64758a; font-size: 9px; line-height: 1.7; }
+    .security-content strong { color: #344a5e; }
+    .footer { color: #909dad; font-size: 9px; line-height: 1.55; padding: 2px 3px 0; }
+    .footer b { color: #65768b; }
+    .toast { position: fixed; z-index: 5; bottom: 20px; left: 50%; transform: translate(-50%, 16px); opacity: 0; pointer-events: none; background: #14283b; color: white; padding: 10px 14px; border-radius: 8px; font-size: 11px; box-shadow: 0 6px 24px rgba(13, 31, 50, .2); transition: opacity .2s, transform .2s; }
+    .toast.show { opacity: 1; transform: translate(-50%, 0); }
+    @media (max-width: 1050px) {
+      .layout { grid-template-columns: 250px minmax(0,1fr); }
+      .metrics { grid-template-columns: repeat(3, minmax(0,1fr)); }
+      .lower-grid { grid-template-columns: 1fr; }
+      .insight-panel { display: grid; grid-template-columns: minmax(0,1fr) minmax(220px,.8fr); column-gap: 20px; }
+      .insight-panel .panel-title { grid-column: 1 / -1; }
+      .insight-text { margin-bottom: 0; }
+    }
+    @media (max-width: 720px) {
+      .topbar { padding: 0 17px; height: 58px; }
+      .top-right { gap: 0; }
+      .top-right .desktop-only { display: none; }
+      .shell { padding: 25px 15px 22px; }
+      .hero { align-items: flex-start; flex-direction: column; margin-bottom: 18px; }
+      .sim-badge { margin-top: -8px; }
+      .layout { grid-template-columns: 1fr; }
+      .metrics { grid-template-columns: repeat(2, minmax(0,1fr)); }
+      .config-body { display: grid; grid-template-columns: 1fr 1fr; gap: 0 18px; }
+      .config-head { padding-bottom: 13px; }
+      .power-control, .control-block { grid-column: 1 / -1; }
+      .field-note { margin-bottom: 10px; }
+      .config-body .divider { display: none; }
+      .setting-row { margin: 14px 0; }
+      .run-btn, .last-run, .notice, .file-actions { grid-column: 1 / -1; }
+      .metrics { gap: 8px; }
+      .metric { padding: 12px; }
+      .metric-value { font-size: 21px; }
+      .chart-panel { padding: 15px 13px 12px; }
+      .canvas-wrap { height: 225px; }
+      .timeline-panel, .insight-panel { padding: 15px 13px; }
+      .insight-panel { display: block; }
+      .insight-text { margin: 10px 0 13px; }
+      .security-content { grid-template-columns: 1fr; gap: 15px; }
+    }
+    @media (max-width: 400px) {
+      .metrics { grid-template-columns: 1fr 1fr; }
+      .metric-top { font-size: 8px; }
+      .metric-value { font-size: 19px; }
+      .chart-actions .outline-btn span { display: none; }
+      .playback-bar { grid-template-columns: auto minmax(60px,1fr) auto; gap: 7px; }
+      .timeline-head { flex-direction: column; }
+      .config-body { grid-template-columns: 1fr; }
+      .power-control, .control-block, .run-btn, .last-run, .notice, .file-actions { grid-column: 1; }
+    }
+    @media print {
+      body { background: white; }
+      .topbar { print-color-adjust: exact; -webkit-print-color-adjust: exact; }
+      .shell { padding: 18px; }
+      .config, .chart-actions, .segmented, .footer, .toast { display: none !important; }
+      .layout { grid-template-columns: 1fr; }
+      .panel, .metric { box-shadow: none; break-inside: avoid; }
+      .job-list { max-height: none; }
+    }
+  </style>
+</head>
+<body>
+  <nav class="topbar" aria-label="Product navigation">
+    <div class="brand-mark" aria-hidden="true">
+      <svg width="19" height="19" viewBox="0 0 24 24" fill="none"><path d="M3 14h4l2.2-7 4.2 12 2.4-8 1.4 3H21" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
+    </div>
+    <div class="brand">power<span>flex</span></div>
+    <div class="top-divider"></div>
+    <div class="top-product">AI workload power scheduler</div>
+    <div class="top-right"><span><i class="live-dot"></i>Read-only adapter available</span><span class="desktop-only">Prototype v0.6</span></div>
+  </nav>
+
+  <main class="shell">
+    <header class="hero">
+      <div>
+        <div class="eyebrow">Grid-aware compute orchestration</div>
+        <h1>Run more AI work.<br>Keep power predictable.</h1>
+        <p>Stress-test deadline-aware schedules against power and ramp limits, and inspect cost, carbon, and job completion at any point in the day.</p>
+      </div>
+      <div class="sim-badge">
+        <svg width="13" height="13" viewBox="0 0 16 16" fill="none"><path d="M8 1.6 13 3.4v4.1c0 3.1-2.1 5.7-5 6.9-2.9-1.2-5-3.8-5-6.9V3.4L8 1.6Z" stroke="currentColor" stroke-width="1.2"/><path d="m5.6 7.8 1.5 1.5 3.4-3.5" stroke="currentColor" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        Synthetic workload simulation
+      </div>
+    </header>
+
+    <div class="layout">
+      <aside class="panel config" aria-label="Simulation settings">
+        <div class="config-head">
+          <h2>Simulation controls</h2>
+          <p>Set your facility’s operating envelope</p>
+        </div>
+        <div class="config-body">
+          <div class="control-block">
+            <label class="field-label" for="scenarioSelect"><span>Grid operating scenario</span></label>
+            <select class="field-select" id="scenarioSelect">
+              <option value="balanced">Balanced grid</option>
+              <option value="constrained">Constrained supply</option>
+              <option value="renewables">Renewables-rich window</option>
+              <option value="custom" hidden>Imported scenario</option>
+            </select>
+            <p class="compact-note" id="scenarioNote">Synthetic demand, price, and carbon profiles.</p>
+          </div>
+          <div class="power-control">
+            <label class="field-label" for="capSlider"><span id="capTitle">Facility power ceiling</span><output id="capOutput" for="capSlider">5.8 MW</output></label>
+            <input id="capSlider" type="range" min="4.8" max="8.0" value="5.8" step="0.1" aria-label="Facility power ceiling in megawatts">
+            <div class="range-hints" id="capRangeHints"><span>4.8 MW · Tight</span><span>8.0 MW · Flexible</span></div>
+            <p class="field-note" id="capDescription">Maximum combined IT and facility demand allowed at any point in the 24-hour planning window.</p>
+          </div>
+
+          <div class="control-block">
+            <label class="field-label" for="rampSlider"><span>15-minute ramp limit</span><output id="rampOutput" for="rampSlider">0.35 MW</output></label>
+            <input id="rampSlider" type="range" min="0.10" max="0.90" value="0.35" step="0.05" aria-label="Maximum 15-minute change in demand in megawatts">
+            <p class="compact-note">Penalizes sharp changes in either direction.</p>
+          </div>
+
+          <div class="control-block">
+            <label class="field-label" for="workloadSlider"><span>AI workload power scale</span><output id="workloadOutput" for="workloadSlider">100%</output></label>
+            <input id="workloadSlider" type="range" min="70" max="140" value="100" step="5" aria-label="Scale AI workload power from 70 to 140 percent">
+            <p class="compact-note">Stress-test a heavier or lighter GPU batch mix.</p>
+          </div>
+
+          <div class="control-block">
+            <label class="field-label" for="objectiveSelect"><span>Optimization objective</span></label>
+            <select class="field-select" id="objectiveSelect">
+              <option value="stability">Grid stability first</option>
+              <option value="balanced" selected>Balanced trade-off</option>
+              <option value="cost">Lower cost only</option>
+              <option value="carbon">Lower carbon only</option>
+              <option value="lowcarbon">Lower cost + carbon</option>
+            </select>
+            <p class="compact-note" id="objectiveDescription">Balances supplied grid limits, ramping, electricity cost, and carbon intensity.</p>
+          </div>
+
+          <hr class="divider">
+          <div class="setting-row">
+            <div class="setting-icon" aria-hidden="true"><svg width="15" height="15" viewBox="0 0 16 16" fill="none"><rect x="2" y="3" width="12" height="10" rx="1.5" stroke="currentColor"/><path d="M5 6h6M5 9h4" stroke="currentColor" stroke-linecap="round"/></svg></div>
+            <div class="setting-copy"><strong id="jobCountLabel">12 batch training jobs</strong><span>Release windows, deadlines, durations, and power profiles.</span></div>
+          </div>
+          <div class="setting-row">
+            <div class="setting-icon" aria-hidden="true"><svg width="15" height="15" viewBox="0 0 16 16" fill="none"><circle cx="8" cy="8" r="5.5" stroke="currentColor"/><path d="M8 4.5V8l2.3 1.5" stroke="currentColor" stroke-linecap="round"/></svg></div>
+            <div class="setting-copy"><strong>15-minute scheduling steps</strong><span>Jobs may move within their deadline slack.</span></div>
+          </div>
+          <div class="file-actions">
+            <button class="outline-btn" id="loadScenarioBtn" type="button">Load scenario JSON</button>
+            <button class="outline-btn" id="templateBtn" type="button">Download template</button>
+            <input class="file-input" id="scenarioFile" type="file" accept=".json,application/json">
+          </div>
+          <button class="run-btn" id="runBtn" type="button">
+            <svg width="14" height="14" viewBox="0 0 16 16" fill="none"><path d="M8 1.5v3M8 11.5v3M1.5 8h3M11.5 8h3M3.4 3.4l2.1 2.1m5 5 2.1 2.1m0-9.2-2.1 2.1m-5 5-2.1 2.1" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/><circle cx="8" cy="8" r="2" stroke="currentColor" stroke-width="1.4"/></svg>
+            Run PowerFlex schedule
+          </button>
+          <div class="last-run" id="lastRun">Ready to simulate</div>
+          <div class="notice"><b>Prototype boundary</b><br>Preset profiles are synthetic. Imported scenarios are processed locally; they are not uploaded. Results do not certify grid safety or predict a real site.</div>
+          <div class="security-stamp"><svg width="12" height="12" viewBox="0 0 16 16" fill="none"><path d="M8 1.5 13 3.3v4.1c0 3.2-2.1 5.8-5 7.1-2.9-1.3-5-3.9-5-7.1V3.3L8 1.5Z" stroke="currentColor" stroke-width="1.2"/><path d="m5.5 7.9 1.6 1.6 3.5-3.6" stroke="currentColor" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round"/></svg><span><b>Local-only demo</b> · no telemetry, accounts, or external network calls.</span></div>
+        </div>
+      </aside>
+
+      <section class="dashboard" aria-label="Simulation results">
+        <div class="metrics" aria-live="polite">
+          <article class="metric">
+            <div class="metric-top"><span>Managed peak demand</span><svg class="metric-icon" width="15" height="15" viewBox="0 0 16 16" fill="none"><path d="M2 12.5 5.5 9l2.2 1.9L13.5 4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/><path d="M10.5 4h3v3" stroke="currentColor" stroke-width="1.3"/></svg></div>
+            <div class="metric-value" id="managedPeak">—<small id="peakUnit">MW</small></div>
+            <div class="metric-foot" id="peakFoot">vs. baseline</div>
+          </article>
+          <article class="metric">
+            <div class="metric-top"><span>Peak reduction</span><svg class="metric-icon" width="15" height="15" viewBox="0 0 16 16" fill="none"><path d="M8 2v10m0 0 3.5-3.5M8 12 4.5 8.5M3 14h10" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/></svg></div>
+            <div class="metric-value" id="peakReduction">—<small>%</small></div>
+            <div class="metric-foot" id="reductionFoot">baseline peak comparison</div>
+          </article>
+          <article class="metric">
+            <div class="metric-top"><span>Max 15-min ramp</span><svg class="metric-icon" width="15" height="15" viewBox="0 0 16 16" fill="none"><path d="M2 12.5h3l2-8 2 7 1.8-4H14" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/></svg></div>
+            <div class="metric-value" id="managedRamp">—<small id="rampUnit">MW</small></div>
+            <div class="metric-foot" id="rampFoot">largest step up or down</div>
+          </article>
+          <article class="metric">
+            <div class="metric-top"><span>Jobs on time</span><svg class="metric-icon" width="15" height="15" viewBox="0 0 16 16" fill="none"><circle cx="8" cy="8" r="5.5" stroke="currentColor" stroke-width="1.3"/><path d="m5.4 8.1 1.7 1.7 3.6-3.7" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"/></svg></div>
+            <div class="metric-value" id="jobsOnTime">—<small>/ 12</small></div>
+            <div class="metric-foot" id="jobsFoot">training jobs completed</div>
+          </article>
+          <article class="metric">
+            <div class="metric-top"><span>Simulated energy cost</span><svg class="metric-icon" width="15" height="15" viewBox="0 0 16 16" fill="none"><path d="M8 1.8v12.4M11 4.2H6.6a2 2 0 0 0 0 4h2.8a2 2 0 0 1 0 4H4.8" stroke="currentColor" stroke-width="1.35" stroke-linecap="round"/></svg></div>
+            <div class="metric-value" id="energyCost">—</div>
+            <div class="metric-foot" id="costFoot">time-varying synthetic rates</div>
+          </article>
+          <article class="metric">
+            <div class="metric-top"><span>Grid emissions (sim.)</span><svg class="metric-icon" width="15" height="15" viewBox="0 0 16 16" fill="none"><path d="M13.3 2.5c-4.9 0-8.4 1.7-8.4 5.4 0 2 1.4 3.4 3.4 3.4 3.7 0 5-3.7 5-8.8Z" stroke="currentColor" stroke-width="1.25"/><path d="M2.7 13.5c1.2-2.7 3-4.2 6.2-5.7" stroke="currentColor" stroke-width="1.25" stroke-linecap="round"/></svg></div>
+            <div class="metric-value" id="gridEmissions">—</div>
+            <div class="metric-foot" id="emissionsFoot">synthetic grid intensity</div>
+          </article>
+        </div>
+
+        <div class="constraint-status" id="constraintStatus" role="status" aria-live="polite">
+          <svg width="15" height="15" viewBox="0 0 16 16" fill="none" aria-hidden="true"><circle cx="8" cy="8" r="6" stroke="currentColor" stroke-width="1.3"/><path d="m5.2 8.1 1.8 1.8 3.8-4" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          <span><b id="constraintHeadline">No modeled hard-constraint breaches.</b><small id="constraintDetail">Feasibility applies to the supplied power ceiling, ramp limit, and job deadlines.</small></span>
+        </div>
+
+        <article class="panel chart-panel">
+          <div class="panel-heading">
+            <div><h2 class="panel-title">Power demand profile</h2><p id="chartSubtitle">Balanced grid · 24-hour window · synthetic time-varying cost and carbon profile</p></div>
+            <div class="chart-actions">
+              <button class="outline-btn" id="csvBtn" type="button" title="Download simulated power traces as CSV"><svg width="12" height="12" viewBox="0 0 16 16" fill="none"><path d="M8 2v8m0 0 3-3m-3 3L5 7M3 11.5v2h10v-2" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"/></svg><span>Export CSV</span></button>
+              <button class="outline-btn" id="jsonReportBtn" type="button" title="Download full run configuration and results as JSON"><svg width="12" height="12" viewBox="0 0 16 16" fill="none"><path d="M4 2.5h5l3 3v8H4v-11Z" stroke="currentColor" stroke-width="1.2" stroke-linejoin="round"/><path d="M9 2.5v3h3M6 8h4M6 10.5h4" stroke="currentColor" stroke-width="1.2" stroke-linecap="round"/></svg><span>Run report</span></button>
+              <button class="outline-btn" id="printBtn" type="button" title="Print simulation summary"><svg width="12" height="12" viewBox="0 0 16 16" fill="none"><path d="M4 5V2.5h8V5M4 11H2.5V6.5h11V11H12M4 9.5h8v4H4v-4Z" stroke="currentColor" stroke-width="1.2" stroke-linejoin="round"/><circle cx="11.4" cy="7.8" r=".6" fill="currentColor"/></svg><span>Print summary</span></button>
+            </div>
+          </div>
+          <div class="canvas-wrap"><canvas id="powerChart" tabindex="0" role="img" aria-keyshortcuts="ArrowLeft ArrowRight Space Enter" aria-label="Interactive chart comparing baseline and PowerFlex power demand. Use the time control below or point at the chart for values; focus it and use arrow keys to step or Space to play."></canvas><div class="chart-tooltip" id="chartTooltip" role="status"></div></div>
+          <div class="chart-legend" aria-label="Chart legend">
+            <span class="legend-item"><i class="legend-line"></i>PowerFlex managed</span>
+            <span class="legend-item"><i class="legend-line baseline"></i><span id="baselineLegend">Baseline, earliest-start</span></span>
+            <span class="legend-item"><i class="legend-line cap"></i><span id="capLegend">Facility power ceiling</span></span>
+          </div>
+          <div class="playback-bar">
+            <button class="play-btn" id="playBtn" type="button" aria-pressed="false">▶ Play 24-hour trace</button>
+            <input class="time-scrubber" id="timeScrubber" type="range" min="0" max="95" value="0" step="1" aria-label="Scrub through the 24-hour power trace">
+            <output class="playback-readout" id="playbackReadout">00:00</output>
+            <div class="playback-detail" id="playbackDetail">Scrub or hover over the chart to inspect demand, active jobs, price, and carbon intensity.</div>
+          </div>
+        </article>
+
+        <div class="lower-grid">
+          <article class="panel timeline-panel">
+            <div class="timeline-head">
+              <div><h2 class="panel-title">Training job schedule</h2><p>Colored bars show job runtime; shaded bands show the allowed window.</p></div>
+              <div class="segmented" role="group" aria-label="Choose schedule to display"><button type="button" class="active" data-mode="managed" aria-pressed="true">PowerFlex</button><button type="button" data-mode="baseline" aria-pressed="false">Baseline</button></div>
+            </div>
+            <div class="timeline-axis" aria-hidden="true"><span>00:00</span><span>06:00</span><span>12:00</span><span>18:00</span><span>24:00</span></div>
+            <div class="job-list" id="jobList" aria-label="Scheduled batch jobs"></div>
+            <div class="timeline-foot" id="timelineFoot">PowerFlex schedule · jobs stay within their simulated deadlines.</div>
+          </article>
+
+          <article class="panel insight-panel">
+            <div class="panel-title">Scheduling insight</div>
+            <div>
+              <div class="insight-label"><svg width="12" height="12" viewBox="0 0 16 16" fill="none"><path d="M8 1.5 9.9 6l4.6 2-4.6 1.9L8 14.5l-1.9-4.6L1.5 8l4.6-2L8 1.5Z" stroke="currentColor" stroke-width="1.2" stroke-linejoin="round"/></svg>What changed</div>
+              <p class="insight-text" id="insightText">Run the scheduler to compare the managed plan with earliest-start execution.</p>
+            </div>
+            <div class="insight-stats">
+              <div class="insight-stat"><span>Jobs shifted later</span><b id="shiftedCount">—</b></div>
+              <div class="insight-stat"><span>Baseline ceiling breaches</span><b id="breachDuration">—</b></div>
+              <div class="insight-stat"><span>Managed time above ceiling</span><b id="managedBreach">—</b></div>
+              <div class="insight-stat"><span>15-minute ramp violations</span><b id="rampViolations">—</b></div>
+              <div class="insight-stat"><span>Cost / carbon change</span><b id="tradeoffChange">—</b></div>
+            </div>
+          </article>
+        </div>
+
+        <details class="security-panel">
+          <summary><span class="security-summary-copy"><span>Security posture &amp; enterprise deployment</span><small>Local demo controls · production gates</small></span></summary>
+          <div class="security-content">
+            <section>
+              <h3>Active in this demo</h3>
+              <ul>
+                <li><strong>Local processing:</strong> imported scenario data remains in browser memory; this browser demo has no account, telemetry, or network integration.</li>
+                <li><strong>Slurm advisory:</strong> a separate local CLI can read an authorized Slurm snapshot and emit recommendations without changing scheduler state. It needs real due times and site signals. <a href="scheduler-adapters/README.md">Open the integration guide</a>.</li>
+                <li><strong>Content Security Policy:</strong> network connections and unapproved scripts are blocked; the app script is allowlisted by hash.</li>
+                <li><strong>Input limits:</strong> JSON files are capped at 256 KB and checked against a fixed schema, numeric ranges, time steps, job count, and safe job IDs.</li>
+                <li><strong>No persistence:</strong> uploaded data is not written to local storage or sent to a service.</li>
+                <li><strong>Slurm output handling:</strong> advisory files are owner-only where supported; existing outputs, symbolic-link destinations, and input/output collisions are rejected unless replacement is explicitly requested.</li>
+              </ul>
+            </section>
+            <section>
+              <h3>Required before a company pilot</h3>
+              <ul>
+                <li>Company SSO, role-based permissions, tenant isolation, and least-privilege service identities.</li>
+                <li>Approved hosting, encrypted transport and storage, audit trails, retention rules, and incident response ownership.</li>
+                <li>Security threat modeling, dependency and deployment controls, and review by the company’s security team.</li>
+                <li>Read-only integration first; operational control requires validated site data, engineering sign-off, and a human-approved fail-safe path.</li>
+              </ul>
+            </section>
+          </div>
+        </details>
+
+        <div class="footer"><b>Model note:</b> illustrative 15-minute traces and a multi-start local-search heuristic. Cost and emissions use synthetic hourly profiles. The demo does not model electrical frequency response, GPU hardware behavior, or utility protection systems. It is independent of Google, NVIDIA, and Microsoft; none has evaluated or endorsed it. It is a local prototype, not a production enterprise service or operational control system.</div>
+      </section>
+    </div>
+  </main>
+  <div class="toast" id="toast" role="status" aria-live="polite"></div>
+
+  <script>
+    (() => {
+      'use strict';
+      const HORIZON = 24;
+      const STEP_HOURS = 0.25;
+      const STEPS = HORIZON / STEP_HOURS;
+      const DEFAULT_JOBS = [
+        { id: 'TRN-01', release: 0.0, deadline: 8.0, duration: 2.50, peak: 0.58, phaseOffset: 0 },
+        { id: 'TRN-02', release: 0.0, deadline: 9.0, duration: 2.25, peak: 0.48, phaseOffset: 2 },
+        { id: 'TRN-03', release: 1.0, deadline: 9.5, duration: 2.75, peak: 0.54, phaseOffset: 4 },
+        { id: 'TRN-04', release: 1.0, deadline: 10.0, duration: 2.00, peak: 0.46, phaseOffset: 6 },
+        { id: 'TRN-05', release: 2.0, deadline: 11.0, duration: 3.00, peak: 0.62, phaseOffset: 1 },
+        { id: 'TRN-06', release: 2.5, deadline: 12.0, duration: 2.25, peak: 0.52, phaseOffset: 3 },
+        { id: 'TRN-07', release: 3.0, deadline: 12.5, duration: 2.75, peak: 0.57, phaseOffset: 5 },
+        { id: 'TRN-08', release: 3.5, deadline: 13.0, duration: 2.25, peak: 0.49, phaseOffset: 7 },
+        { id: 'TRN-09', release: 4.0, deadline: 14.0, duration: 2.75, peak: 0.60, phaseOffset: 2 },
+        { id: 'TRN-10', release: 4.5, deadline: 14.5, duration: 2.50, peak: 0.47, phaseOffset: 4 },
+        { id: 'TRN-11', release: 5.0, deadline: 15.0, duration: 2.75, peak: 0.56, phaseOffset: 6 },
+        { id: 'TRN-12', release: 6.0, deadline: 16.0, duration: 2.50, peak: 0.53, phaseOffset: 1 }
+      ];
+      const phase = [0.96, 1.00, 0.98, 0.99, 0.97, 1.00, 0.98, 0.99];
+      const JOB_POWER_RAMP_INTERVALS = 4;
+      const jobProfileCache = new WeakMap();
+      const PRESETS = {
+        balanced: { label: 'Balanced grid', cap: 5.8, ramp: 0.35, objective: 'balanced', note: 'Synthetic demand, price, and carbon profiles.' },
+        constrained: { label: 'Constrained supply', cap: 5.3, ramp: 0.22, objective: 'stability', note: 'Higher evening load, tighter headroom, synthetic rates.' },
+        renewables: { label: 'Renewables-rich window', cap: 5.9, ramp: 0.45, objective: 'lowcarbon', note: 'Synthetic midday low-carbon, low-price window.' }
+      };
+      let activeJobs = DEFAULT_JOBS.map((job) => ({ ...job }));
+      let uploadedScenario = null;
+      let activeScenarioId = 'balanced';
+      let result = null;
+      let timelineMode = 'managed';
+      let toastTimer = null;
+      let playIndex = 0;
+      let playbackTimer = null;
+
+      const $ = (id) => document.getElementById(id);
+      const slot = (hours) => Math.round(hours / STEP_HOURS);
+      const hourOf = (i) => i * STEP_HOURS;
+      const powerDisplay = () => uploadedScenario?.powerDisplayUnit === 'kW'
+        ? { scale: 1000, unit: 'kW', decimals: 3 }
+        : { scale: 1, unit: 'MW', decimals: 2 };
+      const powerDisplayValue = (value) => (value * powerDisplay().scale).toFixed(powerDisplay().decimals);
+      const fmtMW = (value) => {
+        const display = powerDisplay();
+        return `${(value * display.scale).toFixed(display.decimals)} ${display.unit}`;
+      };
+      const hasHistoricalReference = (data) => data.jobs.some((job) => Number.isFinite(job.baselineStart));
+      const hasPriceProfile = (data) => data.priceUSDPerMWh.some((value) => value > 0);
+      const hasCarbonProfile = (data) => data.carbonKgPerMWh.some((value) => value > 0);
+      const hasRateProfiles = (data) => hasPriceProfile(data) && hasCarbonProfile(data);
+
+      function configurePowerControls(scenario) {
+        const priceAvailable = scenario ? hasPriceProfile(scenario) : true;
+        const carbonAvailable = scenario ? hasCarbonProfile(scenario) : true;
+        const needs = { stability: [], balanced: ['price', 'carbon'], cost: ['price'], carbon: ['carbon'], lowcarbon: ['price', 'carbon'] };
+        Array.from($('objectiveSelect').options).forEach((option) => {
+          const required = needs[option.value] || [];
+          option.disabled = required.some((signal) => signal === 'price' ? !priceAvailable : !carbonAvailable);
+        });
+        const isNodeScale = scenario?.powerDisplayUnit === 'kW' && scenario.evaluationSettings;
+        if (isNodeScale) {
+          const cap = Number(scenario.evaluationSettings.powerCeilingMW);
+          const ramp = Number(scenario.evaluationSettings.maximum15MinuteRampMW);
+          if (!(cap > 0) || !(ramp > 0)) throw new Error('Measured scenario needs positive power ceiling and ramp settings.');
+          $('capTitle').textContent = 'Node power ceiling';
+          $('capSlider').setAttribute('aria-label', 'Node power ceiling in kilowatts');
+          $('rampSlider').setAttribute('aria-label', 'Maximum 15-minute change in node power in kilowatts');
+          $('capLegend').textContent = 'Node power ceiling';
+          $('capDescription').textContent = 'Data-derived sample threshold for one measured node; it is not a facility operating limit.';
+          $('capSlider').min = String(cap * 0.6);
+          $('capSlider').max = String(cap * 1.4);
+          $('capSlider').step = String(Math.max(cap / 100, 1e-9));
+          $('capSlider').value = String(cap);
+          $('capRangeHints').innerHTML = `<span>${fmtMW(cap * 0.6)} · Tight</span><span>${fmtMW(cap * 1.4)} · Flexible</span>`;
+          $('capOutput').value = fmtMW(cap);
+          $('capOutput').textContent = fmtMW(cap);
+          $('rampSlider').min = String(ramp * 0.5);
+          $('rampSlider').max = String(ramp * 2);
+          $('rampSlider').step = String(Math.max(ramp / 10, 1e-9));
+          $('rampSlider').value = String(ramp);
+          $('rampOutput').value = fmtMW(ramp);
+          $('rampOutput').textContent = fmtMW(ramp);
+          const requestedObjective = scenario.evaluationSettings.objective;
+          if (requestedObjective && needs[requestedObjective] && !needs[requestedObjective].some((signal) => signal === 'price' ? !priceAvailable : !carbonAvailable)) {
+            $('objectiveSelect').value = requestedObjective;
+          } else {
+            $('objectiveSelect').value = carbonAvailable ? 'carbon' : priceAvailable ? 'cost' : 'stability';
+          }
+          $('baselineLegend').textContent = 'Observed-start reference';
+          $('rampOutput').value = fmtMW(ramp);
+          $('rampOutput').textContent = fmtMW(ramp);
+        } else {
+          $('capTitle').textContent = 'Facility power ceiling';
+          $('capSlider').setAttribute('aria-label', 'Facility power ceiling in megawatts');
+          $('rampSlider').setAttribute('aria-label', 'Maximum 15-minute change in demand in megawatts');
+          $('capLegend').textContent = 'Facility power ceiling';
+          $('capDescription').textContent = 'Maximum combined IT and facility demand allowed at any point in the 24-hour planning window.';
+          $('capSlider').min = '4.8'; $('capSlider').max = '8.0'; $('capSlider').step = '0.1';
+          $('rampSlider').min = '0.10'; $('rampSlider').max = '0.90'; $('rampSlider').step = '0.05';
+          $('capRangeHints').innerHTML = '<span>4.8 MW · Tight</span><span>8.0 MW · Flexible</span>';
+          $('baselineLegend').textContent = hasHistoricalReference(scenario || { jobs: [] }) ? 'Observed-start reference' : 'Baseline, earliest-start';
+          $('rampOutput').value = `${Number($('rampSlider').value).toFixed(2)} MW`;
+          $('rampOutput').textContent = `${Number($('rampSlider').value).toFixed(2)} MW`;
+        }
+        updateObjectiveDescription(scenario || getScenarioData());
+      }
+
+      function updateObjectiveDescription(data) {
+        const objective = $('objectiveSelect').value;
+        const hasPrice = data ? hasPriceProfile(data) : true;
+        const hasCarbon = data ? hasCarbonProfile(data) : true;
+        const descriptions = {
+          stability: 'Prioritizes power ceilings, ramp limits, and schedule delay.',
+          balanced: 'Balances stability, supplied electricity price, and supplied carbon signals.',
+          cost: hasPrice ? 'Uses the supplied time-varying electricity price; no tariff is inferred.' : 'A time-varying electricity price is required for this objective.',
+          carbon: hasCarbon ? 'Uses the supplied time-varying carbon signal; its geographic and accounting scope come from the source.' : 'A time-varying carbon signal is required for this objective.',
+          lowcarbon: 'Balances supplied electricity price and carbon signals with power stability.'
+        };
+        $('objectiveDescription').textContent = descriptions[objective] || descriptions.stability;
+      }
+
+      function facilityBaseline(scenarioId) {
+        return Array.from({ length: STEPS }, (_, i) => {
+          const h = hourOf(i);
+          const daily = 3.18 + 0.26 * Math.sin((h - 7) * 2 * Math.PI / 24) + 0.12 * Math.sin((h + 1) * 4 * Math.PI / 24);
+          const evening = h >= 17 && h < 22 ? (scenarioId === 'constrained' ? 0.55 : 0.12) : 0;
+          const midDay = scenarioId === 'renewables' && h >= 10 && h < 15 ? -0.10 : 0;
+          return Math.max(2.35, daily + evening + midDay);
+        });
+      }
+
+      function profileFor(scenarioId) {
+        const carbonKgPerMWh = [];
+        const priceUSDPerMWh = [];
+        for (let i = 0; i < STEPS; i++) {
+          const h = hourOf(i);
+          const solar = Math.exp(-Math.pow((h - 13) / 3.3, 2));
+          const evening = Math.exp(-Math.pow((h - 19) / 3.1, 2));
+          if (scenarioId === 'constrained') {
+            carbonKgPerMWh.push(440 - 35 * solar + 115 * evening);
+            priceUSDPerMWh.push(82 + 24 * solar + 118 * evening);
+          } else if (scenarioId === 'renewables') {
+            carbonKgPerMWh.push(430 - 255 * solar + 85 * evening);
+            priceUSDPerMWh.push(96 - 66 * solar + 62 * evening);
+          } else {
+            carbonKgPerMWh.push(430 - 105 * solar + 55 * evening);
+            priceUSDPerMWh.push(75 + 10 * solar + 48 * evening);
+          }
+        }
+        return { carbonKgPerMWh, priceUSDPerMWh };
+      }
+
+      function getScenarioData() {
+        if (uploadedScenario) return uploadedScenario;
+        const profile = profileFor(activeScenarioId);
+        return {
+          name: PRESETS[activeScenarioId].label,
+          facilityBaselineMW: facilityBaseline(activeScenarioId),
+          carbonKgPerMWh: profile.carbonKgPerMWh,
+          priceUSDPerMWh: profile.priceUSDPerMWh,
+          jobs: activeJobs
+        };
+      }
+
+      function jobProfile(job) {
+        if (jobProfileCache.has(job)) return jobProfileCache.get(job);
+        const length = slot(job.duration);
+        const profile = Array.isArray(job.powerProfileMW)
+          ? job.powerProfileMW.slice()
+          : Array.from({ length }, (_, offset) => {
+              const rampIntervals = Math.min(JOB_POWER_RAMP_INTERVALS, Math.max(1, Math.floor(length / 2)));
+              const envelope = Math.min(1, (offset + 1) / rampIntervals, (length - offset) / rampIntervals);
+              return job.peak * envelope * phase[(offset + (job.phaseOffset || 0)) % phase.length];
+            });
+        jobProfileCache.set(job, profile);
+        return profile;
+      }
+
+      function addJob(power, job, startSlot, direction = 1) {
+        const draw = jobProfile(job);
+        for (let i = 0; i < draw.length && startSlot + i < STEPS; i++) power[startSlot + i] += draw[i] * direction;
+      }
+
+      function buildBaseline(data) {
+        const power = data.facilityBaselineMW.slice();
+        const schedule = data.jobs.map((job) => {
+          const startSlot = slot(Number.isFinite(job.baselineStart) ? job.baselineStart : job.release);
+          addJob(power, job, startSlot);
+          return { ...job, startSlot, endSlot: startSlot + slot(job.duration) };
+        });
+        return { power, schedule };
+      }
+
+      function operatingTotals(power, data) {
+        let energyMWh = 0, costUSD = 0, emissionsKg = 0;
+        for (let i = 0; i < power.length; i++) {
+          const energy = power[i] * STEP_HOURS;
+          energyMWh += energy;
+          costUSD += energy * data.priceUSDPerMWh[i];
+          emissionsKg += energy * data.carbonKgPerMWh[i];
+        }
+        return { energyMWh, costUSD, emissionsKg };
+      }
+
+      function scoreSchedule(power, starts, data, cap, rampLimit, objective, reference, changedIndex = -1, changedStart = 0) {
+        const weights = {
+          stability: { cap: 620, ramp: 310, smooth: 5, cost: 4, carbon: 4, delay: 2.2 },
+          balanced: { cap: 520, ramp: 220, smooth: 3, cost: 38, carbon: 38, delay: 2.0 },
+          cost: { cap: 460, ramp: 150, smooth: 2, cost: 105, carbon: 0, delay: 1.7 },
+          carbon: { cap: 460, ramp: 150, smooth: 2, cost: 0, carbon: 105, delay: 1.7 },
+          lowcarbon: { cap: 460, ramp: 150, smooth: 2, cost: 72, carbon: 105, delay: 1.7 }
+        }[objective] || { cap: 520, ramp: 220, smooth: 3, cost: 38, carbon: 38, delay: 2.0 };
+        let capPenalty = 0, rampPenalty = 0, smoothPenalty = 0, delayHours = 0;
+        let flexCost = 0, flexCarbon = 0;
+        for (let i = 0; i < power.length; i++) {
+          const over = Math.max(0, power[i] - cap);
+          capPenalty += over * over;
+          const flexMW = Math.max(0, power[i] - data.facilityBaselineMW[i]);
+          flexCost += flexMW * STEP_HOURS * data.priceUSDPerMWh[i];
+          flexCarbon += flexMW * STEP_HOURS * data.carbonKgPerMWh[i];
+          if (i > 0) {
+            const ramp = Math.abs(power[i] - power[i - 1]);
+            const excessRamp = Math.max(0, ramp - rampLimit);
+            rampPenalty += excessRamp * excessRamp;
+            smoothPenalty += ramp * ramp;
+          }
+        }
+        data.jobs.forEach((job, index) => {
+          const start = index === changedIndex ? changedStart : starts[index];
+          delayHours += Math.max(0, start - slot(job.release)) * STEP_HOURS;
+        });
+        const costRatio = flexCost / Math.max(1, reference.flexCost);
+        const carbonRatio = flexCarbon / Math.max(1, reference.flexCarbon);
+        return capPenalty * weights.cap + rampPenalty * weights.ramp + smoothPenalty * weights.smooth + costRatio * weights.cost * 100 + carbonRatio * weights.carbon * 100 + delayHours * weights.delay;
+      }
+
+      function constraintMetrics(power, schedule, cap, rampLimit, knownDeadlineMisses = null) {
+        let capIntervals = 0, capExcessMW = 0, rampEvents = 0, rampExcessMW = 0;
+        for (let i = 0; i < power.length; i++) {
+          const over = Math.max(0, power[i] - cap);
+          if (over > 1e-9) { capIntervals++; capExcessMW += over; }
+          if (i > 0) {
+            const excess = Math.max(0, Math.abs(power[i] - power[i - 1]) - rampLimit);
+            if (excess > 1e-9) { rampEvents++; rampExcessMW += excess; }
+          }
+        }
+        const deadlineMisses = knownDeadlineMisses === null
+          ? schedule.filter((job) => job.endSlot > slot(job.deadline)).length
+          : knownDeadlineMisses;
+        return {
+          feasible: capIntervals === 0 && rampEvents === 0 && deadlineMisses === 0,
+          capIntervals,
+          capHours: capIntervals * STEP_HOURS,
+          capExcessMWh: capExcessMW * STEP_HOURS,
+          rampEvents,
+          rampExcessMW,
+          deadlineMisses,
+          totalViolationEvents: capIntervals + rampEvents + deadlineMisses,
+          totalExcess: capExcessMW + rampExcessMW
+        };
+      }
+
+      function compareRanks(a, b) {
+        if (!b) return -1;
+        if (a.constraints.totalViolationEvents !== b.constraints.totalViolationEvents) return a.constraints.totalViolationEvents - b.constraints.totalViolationEvents;
+        if (Math.abs(a.constraints.totalExcess - b.constraints.totalExcess) > 1e-9) return a.constraints.totalExcess - b.constraints.totalExcess;
+        if (Math.abs(a.objectiveScore - b.objectiveScore) > 1e-9) return a.objectiveScore - b.objectiveScore;
+        return 0;
+      }
+
+      function scheduleJobs(data, cap, rampLimit, objective, baseline) {
+        const jobs = data.jobs;
+        const earliest = jobs.map((job) => slot(job.release));
+        const latest = jobs.map((job) => slot(job.deadline - job.duration));
+        const referencePower = baseline.power;
+        let referenceCost = 0, referenceCarbon = 0;
+        for (let i = 0; i < STEPS; i++) {
+          const flex = Math.max(0, referencePower[i] - data.facilityBaselineMW[i]) * STEP_HOURS;
+          referenceCost += flex * data.priceUSDPerMWh[i];
+          referenceCarbon += flex * data.carbonKgPerMWh[i];
+        }
+        const reference = { flexCost: referenceCost, flexCarbon: referenceCarbon };
+        const order = jobs.map((_, i) => i).sort((a, b) => latest[a] - latest[b] || earliest[a] - earliest[b]);
+        let best = null;
+        let seed = 271828;
+        const random = () => { seed = (seed * 1664525 + 1013904223) >>> 0; return seed / 4294967296; };
+        for (let restart = 0; restart < 6; restart++) {
+          const starts = jobs.map((_, i) => restart === 0 ? earliest[i] : earliest[i] + Math.floor(random() * (latest[i] - earliest[i] + 1)));
+          const power = data.facilityBaselineMW.slice();
+          jobs.forEach((job, i) => addJob(power, job, starts[i]));
+          for (let pass = 0; pass < 4; pass++) {
+            let moved = false;
+            for (const index of order) {
+              const job = jobs[index];
+              const priorStart = starts[index];
+              addJob(power, job, starts[index], -1);
+              let bestStart = starts[index];
+              let bestRank = null;
+              for (let candidate = earliest[index]; candidate <= latest[index]; candidate++) {
+                addJob(power, job, candidate);
+                const rank = {
+                  constraints: constraintMetrics(power, null, cap, rampLimit, 0),
+                  objectiveScore: scoreSchedule(power, starts, data, cap, rampLimit, objective, reference, index, candidate)
+                };
+                addJob(power, job, candidate, -1);
+                if (compareRanks(rank, bestRank) < 0) { bestRank = rank; bestStart = candidate; }
+              }
+              starts[index] = bestStart;
+              addJob(power, job, bestStart);
+              if (bestStart !== priorStart) moved = true;
+            }
+            if (!moved) break;
+          }
+          const schedule = jobs.map((job, i) => ({ ...job, startSlot: starts[i], endSlot: starts[i] + slot(job.duration) }));
+          const rank = {
+            constraints: constraintMetrics(power, schedule, cap, rampLimit),
+            objectiveScore: scoreSchedule(power, starts, data, cap, rampLimit, objective, reference)
+          };
+          if (compareRanks(rank, best) < 0) best = { ...rank, power: power.slice(), starts: starts.slice() };
+        }
+        const schedule = jobs.map((job, i) => ({ ...job, startSlot: best.starts[i], endSlot: best.starts[i] + slot(job.duration) }))
+          .sort((a, b) => a.startSlot - b.startSlot || a.id.localeCompare(b.id));
+        return { power: best.power, schedule, objectiveScore: best.objectiveScore, constraints: best.constraints, optimizer: { name: 'deterministic multi-start coordinate search', restarts: 6, passesPerRestart: 4, seed: 271828, globalOptimalityGuaranteed: false } };
+      }
+
+      function maxValue(values) { return Math.max(...values); }
+      function maxRamp(values) {
+        let maximum = 0;
+        for (let i = 1; i < values.length; i++) maximum = Math.max(maximum, Math.abs(values[i] - values[i - 1]));
+        return maximum;
+      }
+      function aboveCapHours(values, cap) { return values.filter((v) => v > cap).length * STEP_HOURS; }
+      function rampViolations(values, limit) {
+        let count = 0;
+        for (let i = 1; i < values.length; i++) if (Math.abs(values[i] - values[i - 1]) > limit) count++;
+        return count;
+      }
+      function pctChange(base, next) { return base ? (next - base) / base * 100 : 0; }
+      function runSimulation() {
+        stopPlayback();
+        const cap = Number($('capSlider').value);
+        const rampLimit = Number($('rampSlider').value);
+        const objective = $('objectiveSelect').value;
+        const source = getScenarioData();
+        updateObjectiveDescription(source);
+        const workloadScale = Number($('workloadSlider').value) / 100;
+        const data = {
+          ...source,
+          facilityBaselineMW: source.facilityBaselineMW.slice(),
+          carbonKgPerMWh: source.carbonKgPerMWh.slice(),
+          priceUSDPerMWh: source.priceUSDPerMWh.slice(),
+          jobs: source.jobs.map((job) => ({
+            ...job,
+            peak: job.peak * workloadScale,
+            powerProfileMW: Array.isArray(job.powerProfileMW) ? job.powerProfileMW.map((value) => value * workloadScale) : undefined
+          }))
+        };
+        const baseline = buildBaseline(data);
+        const managed = scheduleJobs(data, cap, rampLimit, objective, baseline);
+        result = { cap, rampLimit, objective, data, base: data.facilityBaselineMW, baseline, managed, workloadScale };
+        renderMetrics();
+        drawChart();
+        renderTimeline();
+        renderInsight();
+        $('chartSubtitle').textContent = `${data.name} · 24-hour window · ${Math.round(workloadScale * 100)}% workload · ${uploadedScenario ? (hasRateProfiles(data) ? 'imported profiles' : 'measured power; rates not supplied') : 'synthetic time-varying cost and carbon profiles'}`;
+        $('lastRun').textContent = `Updated ${new Intl.DateTimeFormat(undefined, { hour: 'numeric', minute: '2-digit' }).format(new Date())}`;
+        updatePlayhead(playIndex, false);
+      }
+
+      function renderMetrics() {
+        const { cap, rampLimit, baseline, managed, data } = result;
+        const hardConstraints = managed.constraints || constraintMetrics(managed.power, managed.schedule, cap, rampLimit);
+        const basePeak = maxValue(baseline.power);
+        const managedPeak = maxValue(managed.power);
+        const peakDelta = basePeak > 0 ? (basePeak - managedPeak) / basePeak * 100 : 0;
+        const baseRamp = maxRamp(baseline.power);
+        const managedRamp = maxRamp(managed.power);
+        const onTime = managed.schedule.filter((job) => job.endSlot <= slot(job.deadline)).length;
+        const baselineTotals = operatingTotals(baseline.power, data);
+        const managedTotals = operatingTotals(managed.power, data);
+        const costChange = pctChange(baselineTotals.costUSD, managedTotals.costUSD);
+        const emissionsChange = pctChange(baselineTotals.emissionsKg, managedTotals.emissionsKg);
+        $('managedPeak').innerHTML = `${powerDisplayValue(managedPeak)}<small id="peakUnit">${powerDisplay().unit}</small>`;
+        $('peakReduction').innerHTML = `${peakDelta >= 0 ? peakDelta.toFixed(0) : '−' + Math.abs(peakDelta).toFixed(0)}<small>%</small>`;
+        $('managedRamp').innerHTML = `${powerDisplayValue(managedRamp)}<small id="rampUnit">${powerDisplay().unit}</small>`;
+        $('jobsOnTime').innerHTML = `${onTime}<small>/ ${data.jobs.length}</small>`;
+        const priceAvailable = hasPriceProfile(data);
+        const carbonAvailable = hasCarbonProfile(data);
+        $('energyCost').innerHTML = priceAvailable ? `$${(managedTotals.costUSD / 1000).toFixed(1)}<small>k USD</small>` : '—';
+        $('gridEmissions').innerHTML = carbonAvailable ? `${(managedTotals.emissionsKg / 1000).toFixed(1)}<small>t CO₂</small>` : '—';
+        $('peakUnit').textContent = powerDisplay().unit;
+        $('rampUnit').textContent = powerDisplay().unit;
+        const status = $('constraintStatus');
+        status.classList.toggle('warn', !hardConstraints.feasible);
+        $('constraintHeadline').textContent = hardConstraints.feasible
+          ? 'No modeled hard-constraint breaches.'
+          : `Best effort · ${hardConstraints.totalViolationEvents} modeled constraint event${hardConstraints.totalViolationEvents === 1 ? '' : 's'} remain.`;
+        $('constraintDetail').textContent = hardConstraints.feasible
+          ? 'Feasibility applies to the supplied power ceiling, ramp limit, and job deadlines; it is not a grid-safety certification.'
+          : `${hardConstraints.capIntervals} power intervals (${hardConstraints.capHours.toFixed(2)} h), ${hardConstraints.rampEvents} ramp steps, ${hardConstraints.deadlineMisses} deadline misses. Best schedule found by a heuristic search.`;
+        $('peakFoot').textContent = `Reference ${fmtMW(basePeak)} · ceiling ${fmtMW(cap)}`;
+        $('peakFoot').className = `metric-foot ${managedPeak <= cap ? 'good' : ''}`;
+        $('reductionFoot').textContent = peakDelta >= 0 ? `from ${fmtMW(basePeak)} baseline peak` : 'managed peak above baseline';
+        $('reductionFoot').className = `metric-foot ${peakDelta > 0 ? 'good' : ''}`;
+        const rampDelta = baseRamp > 0 ? (baseRamp - managedRamp) / baseRamp * 100 : 0;
+        $('rampFoot').textContent = `${rampDelta >= 0 ? rampDelta.toFixed(0) : '−' + Math.abs(rampDelta).toFixed(0)}% vs. ${fmtMW(baseRamp)} reference`;
+        $('rampFoot').className = `metric-foot ${rampDelta > 0 ? 'good' : ''}`;
+        $('jobsFoot').textContent = `${data.jobs.length - onTime} late · ${data.jobs.length} total jobs`;
+        $('jobsFoot').className = `metric-foot ${onTime === data.jobs.length ? 'good' : ''}`;
+        const costLabel = priceAvailable ? `${Math.abs(costChange).toFixed(1)}% ${costChange <= 0 ? 'lower' : 'higher'} than reference` : 'No price data supplied';
+        const emissionsLabel = carbonAvailable ? `${Math.abs(emissionsChange).toFixed(1)}% ${emissionsChange <= 0 ? 'lower' : 'higher'} than reference` : 'No carbon data supplied';
+        $('costFoot').textContent = costLabel;
+        $('costFoot').className = 'metric-foot';
+        $('emissionsFoot').textContent = emissionsLabel;
+        $('emissionsFoot').className = 'metric-foot';
+        $('rampFoot').title = `Configured 15-minute ramp limit: ${fmtMW(rampLimit)}`;
+      }
+
+      function timeLabel(index) {
+        const minutes = index * 15;
+        return `${String(Math.floor(minutes / 60)).padStart(2, '0')}:${String(minutes % 60).padStart(2, '0')}`;
+      }
+
+      function updatePlayhead(index, redraw = true) {
+        if (!result) return;
+        playIndex = Math.max(0, Math.min(STEPS - 1, Math.round(Number(index) || 0)));
+        $('timeScrubber').value = String(playIndex);
+        $('playbackReadout').value = timeLabel(playIndex);
+        $('playbackReadout').textContent = timeLabel(playIndex);
+        const shownSchedule = result[timelineMode === 'managed' ? 'managed' : 'baseline'].schedule;
+        const active = shownSchedule.filter((job) => job.startSlot <= playIndex && playIndex < job.endSlot).length;
+        const scheduleLabel = timelineMode === 'managed' ? 'PowerFlex' : 'baseline';
+        document.querySelectorAll('.job-row').forEach((row) => {
+          const isActive = Number(row.dataset.startSlot) <= playIndex && playIndex < Number(row.dataset.endSlot);
+          row.classList.toggle('active', isActive);
+        });
+        const managedMW = result.managed.power[playIndex];
+        const baselineMW = result.baseline.power[playIndex];
+        const priorMW = result.managed.power[Math.max(0, playIndex - 1)];
+        const rampMW = playIndex === 0 ? 0 : Math.abs(managedMW - priorMW);
+        const price = result.data.priceUSDPerMWh[playIndex];
+        const carbon = result.data.carbonKgPerMWh[playIndex];
+        const rates = `${hasPriceProfile(result.data) ? `$${price.toFixed(0)}/MWh` : 'price not supplied'} · ${hasCarbonProfile(result.data) ? `${carbon.toFixed(0)} kg CO₂/MWh` : 'carbon not supplied'}`;
+        $('playbackDetail').textContent = `${active} active ${scheduleLabel} jobs · managed ${fmtMW(managedMW)} · reference ${fmtMW(baselineMW)} · 15-min ramp ${fmtMW(rampMW)} · ${rates}`;
+        if (redraw) drawChart();
+      }
+
+      function showChartTooltip(index, event) {
+        updatePlayhead(index, false);
+        const tooltip = $('chartTooltip');
+        const wrap = $('powerChart').parentElement;
+        const shownPower = result[timelineMode === 'managed' ? 'managed' : 'baseline'].power[playIndex];
+        const shownLabel = timelineMode === 'managed' ? 'PowerFlex' : 'Baseline';
+        tooltip.textContent = `${timeLabel(playIndex)}\n${shownLabel}  ${fmtMW(shownPower)}\nReference     ${fmtMW(result.baseline.power[playIndex])}\n${result[timelineMode === 'managed' ? 'managed' : 'baseline'].schedule.filter((job) => job.startSlot <= playIndex && playIndex < job.endSlot).length} active jobs`;
+        tooltip.style.display = 'block';
+        const bounds = wrap.getBoundingClientRect();
+        const left = Math.max(6, Math.min(bounds.width - tooltip.offsetWidth - 6, event.clientX - bounds.left + 12));
+        const top = Math.max(6, Math.min(bounds.height - tooltip.offsetHeight - 6, event.clientY - bounds.top + 12));
+        tooltip.style.left = `${left}px`;
+        tooltip.style.top = `${top}px`;
+        drawChart();
+      }
+
+      function stopPlayback() {
+        if (playbackTimer !== null) clearInterval(playbackTimer);
+        playbackTimer = null;
+        $('playBtn').textContent = '▶ Play 24-hour trace';
+        $('playBtn').setAttribute('aria-pressed', 'false');
+      }
+
+      function togglePlayback() {
+        if (playbackTimer !== null) { stopPlayback(); return; }
+        if (playIndex >= STEPS - 1) updatePlayhead(0, false);
+        $('playBtn').textContent = 'Ⅱ Pause trace';
+        $('playBtn').setAttribute('aria-pressed', 'true');
+        playbackTimer = setInterval(() => {
+          if (playIndex >= STEPS - 1) { stopPlayback(); return; }
+          updatePlayhead(playIndex + 1);
+        }, 220);
+      }
+
+      function drawChart() {
+        const canvas = $('powerChart');
+        const box = canvas.getBoundingClientRect();
+        if (!box.width || !box.height) return;
+        const dpr = Math.max(1, window.devicePixelRatio || 1);
+        canvas.width = Math.round(box.width * dpr);
+        canvas.height = Math.round(box.height * dpr);
+        const ctx = canvas.getContext('2d');
+        ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+        const w = box.width, h = box.height;
+        const pad = { left: 45, right: 12, top: 11, bottom: 29 };
+        const plotW = w - pad.left - pad.right;
+        const plotH = h - pad.top - pad.bottom;
+        const { cap, baseline, managed } = result;
+        const display = powerDisplay();
+        const chartStep = display.unit === 'kW' ? 0.1 : 2;
+        const maxDisplayed = Math.max(cap, maxValue(baseline.power), maxValue(managed.power)) * display.scale;
+        const top = Math.max(chartStep, Math.ceil(maxDisplayed / chartStep) * chartStep);
+        const y = (v) => pad.top + plotH * (1 - (v * display.scale) / top);
+        const x = (i) => pad.left + plotW * i / (STEPS - 1);
+        ctx.clearRect(0, 0, w, h);
+        ctx.font = '9px Inter, system-ui, sans-serif';
+        ctx.textBaseline = 'middle';
+        for (let tick = 0; tick <= top + 1e-9; tick += chartStep) {
+          const yy = y(tick);
+          ctx.strokeStyle = '#e9eef3'; ctx.lineWidth = 1;
+          ctx.beginPath(); ctx.moveTo(pad.left, yy); ctx.lineTo(w - pad.right, yy); ctx.stroke();
+          ctx.fillStyle = '#8a98a8'; ctx.textAlign = 'right'; ctx.fillText(display.unit === 'kW' ? tick.toFixed(1) : tick.toFixed(0), pad.left - 9, yy);
+        }
+        for (let hour = 0; hour <= 24; hour += 3) {
+          const xx = pad.left + plotW * hour / 24;
+          ctx.strokeStyle = '#f0f3f6'; ctx.lineWidth = 1;
+          ctx.beginPath(); ctx.moveTo(xx, pad.top); ctx.lineTo(xx, h - pad.bottom); ctx.stroke();
+          ctx.fillStyle = '#8795a6'; ctx.textAlign = 'center'; ctx.fillText(`${String(hour).padStart(2, '0')}:00`, xx, h - 12);
+        }
+        const drawLine = (values, color, width, dash) => {
+          ctx.beginPath();
+          values.forEach((v, i) => { const xx = x(i), yy = y(v); i ? ctx.lineTo(xx, yy) : ctx.moveTo(xx, yy); });
+          ctx.strokeStyle = color; ctx.lineWidth = width; ctx.setLineDash(dash || []); ctx.lineJoin = 'round'; ctx.lineCap = 'round'; ctx.stroke(); ctx.setLineDash([]);
+        };
+        const capY = y(cap);
+        ctx.strokeStyle = '#df6870'; ctx.lineWidth = 1.25; ctx.setLineDash([5, 4]);
+        ctx.beginPath(); ctx.moveTo(pad.left, capY); ctx.lineTo(w - pad.right, capY); ctx.stroke(); ctx.setLineDash([]);
+        drawLine(baseline.power, '#9aa9b8', 1.6, [4, 4]);
+        drawLine(managed.power, '#0ba88d', 2.35, []);
+        ctx.fillStyle = '#fff'; ctx.strokeStyle = '#0ba88d'; ctx.lineWidth = 1.5;
+        const p = maxValue(managed.power); const pi = managed.power.indexOf(p);
+        ctx.beginPath(); ctx.arc(x(pi), y(p), 3.5, 0, Math.PI * 2); ctx.fill(); ctx.stroke();
+        ctx.fillStyle = '#df6870'; ctx.textAlign = 'right'; ctx.textBaseline = 'bottom';
+        if (capY > pad.top + 11) ctx.fillText(`CEILING ${fmtMW(cap)}`, w - pad.right, capY - 4);
+        if (playIndex !== null) {
+          const xx = x(playIndex);
+          ctx.strokeStyle = 'rgba(25, 63, 82, .42)'; ctx.lineWidth = 1; ctx.setLineDash([3, 3]);
+          ctx.beginPath(); ctx.moveTo(xx, pad.top); ctx.lineTo(xx, h - pad.bottom); ctx.stroke(); ctx.setLineDash([]);
+          ctx.fillStyle = '#fff'; ctx.strokeStyle = '#0b806f'; ctx.lineWidth = 2;
+          ctx.beginPath(); ctx.arc(xx, y(managed.power[playIndex]), 4, 0, Math.PI * 2); ctx.fill(); ctx.stroke();
+          ctx.fillStyle = '#fff'; ctx.strokeStyle = '#8a9bab'; ctx.lineWidth = 1.5;
+          ctx.beginPath(); ctx.arc(xx, y(baseline.power[playIndex]), 3, 0, Math.PI * 2); ctx.fill(); ctx.stroke();
+        }
+      }
+
+      function renderTimeline() {
+        if (!result) return;
+        const items = result[timelineMode === 'managed' ? 'managed' : 'baseline'].schedule;
+        const list = $('jobList');
+        list.innerHTML = items.map((job) => {
+          const start = job.startSlot * STEP_HOURS;
+          const finish = job.endSlot * STEP_HOURS;
+          const release = job.release;
+          const deadline = job.deadline;
+          const windowLeft = (release / HORIZON) * 100;
+          const windowWidth = ((deadline - release) / HORIZON) * 100;
+          const waitWidth = Math.max(0, ((start - release) / HORIZON) * 100);
+          const barLeft = (start / HORIZON) * 100;
+          const barWidth = ((finish - start) / HORIZON) * 100;
+          const late = finish > deadline + 1e-7;
+          return `<div class="job-row" data-start-slot="${job.startSlot}" data-end-slot="${job.endSlot}"><span class="job-name">${job.id}</span><div class="job-track" title="${job.id}: ${start.toFixed(2)}–${finish.toFixed(2)} hours; deadline ${deadline.toFixed(2)} hours"><span class="job-window" style="left:${windowLeft}%;width:${windowWidth}%"></span><span class="job-wait" style="left:${windowLeft}%;width:${waitWidth}%"></span><span class="job-bar ${timelineMode === 'baseline' ? 'baseline' : ''} ${late ? 'late' : ''}" style="left:${barLeft}%;width:${barWidth}%"></span></div></div>`;
+        }).join('');
+        $('timelineFoot').textContent = timelineMode === 'managed'
+          ? 'PowerFlex schedule · shaded window is release-to-deadline slack.'
+          : hasHistoricalReference(result.data) ? 'Observed-start reference · jobs use their rounded measured start times.' : 'Baseline schedule · every job starts as soon as it is released.';
+        document.querySelectorAll('.segmented button').forEach((button) => {
+          const active = button.dataset.mode === timelineMode;
+          button.classList.toggle('active', active);
+          button.setAttribute('aria-pressed', String(active));
+        });
+      }
+
+      function renderInsight() {
+        const { cap, rampLimit, baseline, managed, data } = result;
+        const basePeak = maxValue(baseline.power);
+        const managedPeak = maxValue(managed.power);
+        const shifted = managed.schedule.filter((job) => job.startSlot > slot(job.release)).length;
+        const baselineBreach = aboveCapHours(baseline.power, cap);
+        const managedBreach = aboveCapHours(managed.power, cap);
+        const peakGain = basePeak - managedPeak;
+        const onTime = managed.schedule.filter((job) => job.endSlot <= slot(job.deadline)).length;
+        const baselineTotals = operatingTotals(baseline.power, data);
+        const managedTotals = operatingTotals(managed.power, data);
+        const costChange = pctChange(baselineTotals.costUSD, managedTotals.costUSD);
+        const carbonChange = pctChange(baselineTotals.emissionsKg, managedTotals.emissionsKg);
+        const rampCount = rampViolations(managed.power, rampLimit);
+        let headline;
+        if (!managed.constraints.feasible) {
+          headline = `Best effort: <strong>${managed.constraints.capIntervals}</strong> power intervals, <strong>${managed.constraints.rampEvents}</strong> ramp steps, and <strong>${managed.constraints.deadlineMisses}</strong> missed deadlines remain.`;
+        } else if (managedPeak <= cap && baselineBreach > 0) {
+          headline = `PowerFlex fits all <strong>${onTime} jobs</strong> under the ceiling, shifting <strong>${shifted}</strong> jobs to avoid the baseline peak.`;
+        } else if (peakGain * powerDisplay().scale > 0.05) {
+          headline = `PowerFlex lowers the simulated peak by <strong>${fmtMW(peakGain)}</strong> while keeping <strong>${onTime}/${data.jobs.length}</strong> jobs on time.`;
+        const objectiveFocus = hasRateProfiles(data) ? 'demand, cost, and emissions' : hasCarbonProfile(data) ? 'demand stability and the supplied carbon signal' : hasPriceProfile(data) ? 'demand stability and the supplied price signal' : 'demand stability';
+          headline = 'The baseline already fits the modeled limits. PowerFlex schedules <strong>' + onTime + '/' + data.jobs.length + '</strong> jobs while balancing ' + objectiveFocus + '.';
+        }
+        $('insightText').innerHTML = headline;
+        $('shiftedCount').textContent = `${shifted} of ${data.jobs.length}`;
+        $('breachDuration').textContent = `${baselineBreach.toFixed(2)} h`;
+        $('managedBreach').textContent = `${managedBreach.toFixed(2)} h`;
+        $('rampViolations').textContent = `${rampCount} intervals`;
+        $('tradeoffChange').textContent = hasRateProfiles(data)
+          ? `${costChange > 0 ? '+' : ''}${costChange.toFixed(1)}% cost · ${carbonChange > 0 ? '+' : ''}${carbonChange.toFixed(1)}% CO₂`
+          : hasCarbonProfile(data) ? `${carbonChange > 0 ? '+' : ''}${carbonChange.toFixed(1)}% carbon-signal proxy · price unavailable`
+          : hasPriceProfile(data) ? `${costChange > 0 ? '+' : ''}${costChange.toFixed(1)}% cost · carbon unavailable`
+          : 'Price and carbon profiles not supplied';
+      }
+
+      function showToast(message) {
+        const toast = $('toast');
+        toast.textContent = message;
+        toast.classList.add('show');
+        clearTimeout(toastTimer);
+        toastTimer = setTimeout(() => toast.classList.remove('show'), 2300);
+      }
+
+      function exportCsv() {
+        if (!result) return;
+        const display = powerDisplay();
+        const unit = display.unit.toLowerCase();
+        const referenceLabel = hasHistoricalReference(result.data) ? 'observed_start_reference' : 'earliest_start_reference';
+        const rows = [['time_utc_offset', 'reference_power_' + unit, referenceLabel + '_' + unit, 'powerflex_managed_' + unit, 'power_ceiling_' + unit, 'max_15m_ramp_' + unit, 'electricity_price_usd_per_mwh', 'grid_carbon_kg_per_mwh']];
+        for (let i = 0; i < STEPS; i++) {
+          const h = hourOf(i);
+          rows.push([timeLabel(i), (result.base[i] * display.scale).toFixed(display.decimals), (result.baseline.power[i] * display.scale).toFixed(display.decimals), (result.managed.power[i] * display.scale).toFixed(display.decimals), (result.cap * display.scale).toFixed(display.decimals), (result.rampLimit * display.scale).toFixed(display.decimals), hasPriceProfile(result.data) ? result.data.priceUSDPerMWh[i].toFixed(2) : '', hasCarbonProfile(result.data) ? result.data.carbonKgPerMWh[i].toFixed(2) : '']);
+        }
+        const csv = rows.map((row) => row.join(',')).join('\n');
+        const blob = new Blob([csv], { type: 'text/csv;charset=utf-8' });
+        const url = URL.createObjectURL(blob);
+        const link = document.createElement('a');
+        link.href = url; link.download = 'powerflex-simulation.csv'; link.click();
+        setTimeout(() => URL.revokeObjectURL(url), 1000);
+        showToast('Power traces exported as CSV');
+      }
+
+      function exportRunReport() {
+        if (!result) return;
+        const { cap, rampLimit, objective, data, baseline, managed } = result;
+        const baselineTotals = operatingTotals(baseline.power, data);
+        const managedTotals = operatingTotals(managed.power, data);
+        const toJobs = (jobs) => jobs.map((job) => ({
+          id: job.id,
+          startHour: Number((job.startSlot * STEP_HOURS).toFixed(2)),
+          endHour: Number((job.endSlot * STEP_HOURS).toFixed(2)),
+          releaseHour: job.release,
+          deadlineHour: job.deadline,
+          durationHours: job.duration,
+          peakPowerMW: job.peak,
+          ...(Number.isFinite(job.baselineStart) ? { baselineStartHour: job.baselineStart } : {}),
+          ...(Array.isArray(job.powerProfileMW) ? { powerProfileMW: job.powerProfileMW } : {})
+        }));
+        const report = {
+          schemaVersion: 'powerflex.run-report.v1',
+          generatedAt: new Date().toISOString(),
+          scenario: data.name,
+          dataProvenance: uploadedScenario
+            ? (uploadedScenario.dataProvenance || 'Imported by the user. PowerFlex validates shape and numeric ranges but does not independently verify the source or units.')
+            : 'Synthetic preset values generated by the PowerFlex demo; not measured facility, grid, or GPU data.',
+          powerDisplayUnit: uploadedScenario?.powerDisplayUnit || 'MW',
+          powerScope: uploadedScenario?.powerScope || 'facility-scale synthetic scenario',
+          evaluationSettings: uploadedScenario?.evaluationSettings || null,
+          objective,
+          constraints: {
+            facilityPowerCeilingMW: cap,
+            maximum15MinuteRampMW: rampLimit,
+            workloadScalePercent: Math.round(result.workloadScale * 100),
+            modelFeasibility: managed.constraints,
+            baselineFeasibility: constraintMetrics(baseline.power, baseline.schedule, cap, rampLimit)
+          },
+          optimizer: managed.optimizer,
+          objectiveScore: { value: Number(managed.objectiveScore.toFixed(4)), interpretation: 'Heuristic tie-break score; it is not a cost, percentage, or optimality certificate.' },
+          comparisonOrder: ['minimize hard-constraint event count', 'minimize total cap/ramp excess', 'minimize selected weighted objective score'],
+          inputs: {
+            facilityBaselineMW: data.facilityBaselineMW,
+            carbonIntensityKgPerMWh: data.carbonKgPerMWh,
+            electricityPriceUSDPerMWh: data.priceUSDPerMWh,
+            jobPowerShape: phase,
+            jobPowerRampIntervals: JOB_POWER_RAMP_INTERVALS,
+            jobs: data.jobs.map((job) => ({
+              id: job.id,
+              releaseHour: job.release,
+              deadlineHour: job.deadline,
+              durationHours: job.duration,
+              peakPowerMW: job.peak,
+              phaseOffset: job.phaseOffset || 0,
+              ...(Number.isFinite(job.baselineStart) ? { baselineStartHour: job.baselineStart } : {}),
+              ...(Array.isArray(job.powerProfileMW) ? { powerProfileMW: job.powerProfileMW } : {})
+            }))
+          },
+          metrics: {
+            baseline: { peakMW: maxValue(baseline.power), max15MinuteRampMW: maxRamp(baseline.power), energyMWh: baselineTotals.energyMWh, costUSD: baselineTotals.costUSD, emissionsKgCO2e: baselineTotals.emissionsKg, hardConstraints: constraintMetrics(baseline.power, baseline.schedule, cap, rampLimit) },
+            powerflex: { peakMW: maxValue(managed.power), max15MinuteRampMW: maxRamp(managed.power), energyMWh: managedTotals.energyMWh, costUSD: managedTotals.costUSD, emissionsKgCO2e: managedTotals.emissionsKg, jobsOnTime: managed.schedule.filter((job) => job.endSlot <= slot(job.deadline)).length, hardConstraints: managed.constraints }
+          },
+          schedules: { earliestStart: toJobs(baseline.schedule), powerflex: toJobs(managed.schedule) },
+          timeSeries: managed.power.map((powerflexMW, i) => ({ timeHour: Number(hourOf(i).toFixed(2)), baselineMW: data.facilityBaselineMW[i], earliestStartMW: baseline.power[i], powerflexMW, powerCeilingMW: cap, priceUSDPerMWh: data.priceUSDPerMWh[i], carbonKgPerMWh: data.carbonKgPerMWh[i] })),
+          modelBoundary: uploadedScenario?.evaluationSettings ? 'Imported scenario replay. Read dataProvenance and evaluationSettings for the measured scope, thresholds, and synthetic assumptions. This is not an operational guarantee.' : 'Illustrative scheduling simulation. Validate with authorized site data before operational use.'
+        };
+        downloadJson(report, 'powerflex-run-report.json');
+        showToast('Run report downloaded as JSON');
+      }
+
+      function scenarioTemplate() {
+        const profile = profileFor('balanced');
+        return {
+          schemaVersion: 'powerflex.scenario.v1',
+          name: 'Replace with your anonymized scenario name',
+          horizonHours: HORIZON,
+          intervalMinutes: STEP_HOURS * 60,
+          facilityBaselineMW: facilityBaseline('balanced'),
+          carbonIntensityKgPerMWh: profile.carbonKgPerMWh,
+          electricityPriceUSDPerMWh: profile.priceUSDPerMWh,
+          jobs: DEFAULT_JOBS.map((job) => ({ id: job.id, releaseHour: job.release, deadlineHour: job.deadline, durationHours: job.duration, peakPowerMW: job.peak, phaseOffset: job.phaseOffset }))
+        };
+      }
+
+      function downloadJson(object, filename) {
+        const blob = new Blob([JSON.stringify(object, null, 2)], { type: 'application/json;charset=utf-8' });
+        const url = URL.createObjectURL(blob);
+        const link = document.createElement('a');
+        link.href = url; link.download = filename; link.click();
+        setTimeout(() => URL.revokeObjectURL(url), 1000);
+      }
+
+      function validateAndLoadScenario(raw) {
+        if (!raw || raw.schemaVersion !== 'powerflex.scenario.v1') throw new Error('Use the PowerFlex v1 JSON template.');
+        if (raw.horizonHours !== HORIZON || raw.intervalMinutes !== 15) throw new Error('Scenario must cover 24 hours at 15-minute intervals using JSON numbers.');
+        const readProfile = (key, label) => {
+          const profile = raw[key];
+          if (!Array.isArray(profile) || profile.length !== STEPS || profile.some((value) => typeof value !== 'number' || !Number.isFinite(value) || value < 0 || value > 1000)) {
+            throw new Error(`${label} must contain 96 finite, non-negative JSON numbers.`);
+          }
+          return [...profile];
+        };
+        const facilityBaselineMW = readProfile('facilityBaselineMW', 'Facility baseline');
+        const carbonKgPerMWh = readProfile('carbonIntensityKgPerMWh', 'Carbon intensity');
+        const priceUSDPerMWh = readProfile('electricityPriceUSDPerMWh', 'Electricity price');
+        if (!Array.isArray(raw.jobs) || raw.jobs.length < 1 || raw.jobs.length > 50) throw new Error('Provide between 1 and 50 jobs.');
+        const ids = new Set();
+        const jobs = raw.jobs.map((job, index) => {
+          const id = String(job.id || `JOB-${String(index + 1).padStart(2, '0')}`);
+          const release = job.releaseHour, deadline = job.deadlineHour;
+          const duration = job.durationHours, peak = job.peakPowerMW;
+          const phaseOffset = job.phaseOffset === undefined ? 0 : job.phaseOffset;
+          if (!/^[A-Za-z0-9_-]{1,24}$/.test(id) || ids.has(id)) throw new Error(`Job ${index + 1} needs a unique ID using letters, numbers, _ or - (24 characters max).`);
+          if (![release, deadline, duration, peak, phaseOffset].every(Number.isFinite) || release < 0 || deadline > HORIZON || duration <= 0 || peak <= 0 || peak > 20 || release + duration > deadline || phaseOffset < 0 || phaseOffset > 7 || !Number.isInteger(phaseOffset)) {
+            throw new Error(`Job ${id} has invalid release, deadline, duration, power, or phase values.`);
+          }
+          if ([release, deadline, duration].some((value) => Math.abs(value / STEP_HOURS - Math.round(value / STEP_HOURS)) > 1e-7)) throw new Error(`Job ${id} times must use 15-minute increments.`);
+          ids.add(id);
+          let powerProfileMW;
+          if (job.powerProfileMW !== undefined) {
+            if (!Array.isArray(job.powerProfileMW) || job.powerProfileMW.length !== slot(duration) || job.powerProfileMW.some((value) => typeof value !== 'number' || !Number.isFinite(value) || value < 0 || value > 20)) {
+              throw new Error(`Job ${id} measured profile must contain one non-negative MW value per 15-minute duration interval.`);
+            }
+            powerProfileMW = [...job.powerProfileMW];
+            const profilePeak = Math.max(...powerProfileMW);
+            if (Math.abs(peak - profilePeak) > 1e-6) throw new Error(`Job ${id} peakPowerMW must match the maximum measured profile value.`);
+          }
+          const baselineStart = job.baselineStartHour === undefined ? null : job.baselineStartHour;
+          if (baselineStart !== null && (!Number.isFinite(baselineStart) || baselineStart < release || baselineStart + duration > deadline || Math.abs(baselineStart / STEP_HOURS - Math.round(baselineStart / STEP_HOURS)) > 1e-7)) {
+            throw new Error(`Job ${id} baselineStartHour must be 15-minute aligned and fit within its release/deadline window.`);
+          }
+          return { id, release, deadline, duration, peak, phaseOffset: Math.round(phaseOffset), baselineStart, ...(powerProfileMW ? { powerProfileMW } : {}) };
+        });
+        uploadedScenario = {
+          name: String(raw.name || 'Imported scenario').slice(0, 60),
+          dataProvenance: typeof raw.dataProvenance === 'string' ? raw.dataProvenance.slice(0, 300) : null,
+          powerDisplayUnit: raw.powerDisplayUnit === 'kW' ? 'kW' : 'MW',
+          powerScope: typeof raw.powerScope === 'string' ? raw.powerScope.slice(0, 100) : null,
+          evaluationSettings: raw.evaluationSettings && typeof raw.evaluationSettings === 'object' ? raw.evaluationSettings : null,
+          facilityBaselineMW, carbonKgPerMWh, priceUSDPerMWh, jobs
+        };
+        configurePowerControls(uploadedScenario);
+        activeJobs = jobs;
+        activeScenarioId = 'custom';
+        $('scenarioSelect').querySelector('option[value="custom"]').hidden = false;
+        $('scenarioSelect').value = 'custom';
+        const scenarioDisclosures = [uploadedScenario.dataProvenance, uploadedScenario.evaluationSettings?.deadlineNote].filter(Boolean);
+        $('scenarioNote').textContent = scenarioDisclosures.join(' ' ) || 'Imported locally from JSON; profiles are used as provided.';
+        if (uploadedScenario.powerScope) $('powerChart').setAttribute('aria-label', `Interactive chart comparing baseline and PowerFlex power demand for ${uploadedScenario.powerScope}. Use the time control below or point at the chart for values; focus it and use arrow keys to step or Space to play.`);
+        $('jobCountLabel').textContent = `${jobs.length} imported batch jobs`;
+        runSimulation();
+        showToast(`Loaded ${jobs.length} jobs from scenario`);
+      }
+
+      function applyPreset(id) {
+        if (!PRESETS[id]) return;
+        uploadedScenario = null;
+        configurePowerControls(null);
+        activeScenarioId = id;
+        activeJobs = DEFAULT_JOBS.map((job) => ({ ...job }));
+        const preset = PRESETS[id];
+        $('capSlider').value = preset.cap;
+        $('capOutput').value = `${preset.cap.toFixed(1)} MW`;
+        $('capOutput').textContent = `${preset.cap.toFixed(1)} MW`;
+        $('rampSlider').value = preset.ramp;
+        $('rampOutput').value = `${preset.ramp.toFixed(2)} MW`;
+        $('rampOutput').textContent = `${preset.ramp.toFixed(2)} MW`;
+        $('objectiveSelect').value = preset.objective;
+        $('scenarioNote').textContent = preset.note;
+        $('jobCountLabel').textContent = `${activeJobs.length} batch training jobs`;
+        $('scenarioSelect').querySelector('option[value="custom"]').hidden = true;
+        $('scenarioSelect').value = id;
+        runSimulation();
+      }
+
+      $('capSlider').addEventListener('input', (event) => {
+        $('capOutput').value = fmtMW(Number(event.target.value));
+        $('capOutput').textContent = fmtMW(Number(event.target.value));
+      });
+      $('capSlider').addEventListener('change', runSimulation);
+      $('rampSlider').addEventListener('input', (event) => {
+        $('rampOutput').value = fmtMW(Number(event.target.value));
+        $('rampOutput').textContent = fmtMW(Number(event.target.value));
+      });
+      $('rampSlider').addEventListener('change', runSimulation);
+      $('workloadSlider').addEventListener('input', (event) => {
+        $('workloadOutput').value = `${event.target.value}%`;
+        $('workloadOutput').textContent = `${event.target.value}%`;
+      });
+      $('workloadSlider').addEventListener('change', runSimulation);
+      $('objectiveSelect').addEventListener('change', runSimulation);
+      $('scenarioSelect').addEventListener('change', (event) => applyPreset(event.target.value));
+      $('loadScenarioBtn').addEventListener('click', () => $('scenarioFile').click());
+      $('scenarioFile').addEventListener('change', (event) => {
+        const file = event.target.files && event.target.files[0];
+        if (!file) return;
+        if (file.size > 256 * 1024) {
+          showToast('Scenario file must be 256 KB or smaller.');
+          event.target.value = '';
+          return;
+        }
+        const reader = new FileReader();
+        reader.onload = () => {
+          try { validateAndLoadScenario(JSON.parse(String(reader.result))); }
+          catch (error) { showToast(error.message || 'Could not load that scenario.'); }
+          event.target.value = '';
+        };
+        reader.onerror = () => showToast('Could not read that local file.');
+        reader.readAsText(file);
+      });
+      $('templateBtn').addEventListener('click', () => { downloadJson(scenarioTemplate(), 'powerflex-scenario-template.json'); showToast('Scenario template downloaded'); });
+      $('runBtn').addEventListener('click', runSimulation);
+      $('csvBtn').addEventListener('click', exportCsv);
+      $('jsonReportBtn').addEventListener('click', exportRunReport);
+      $('printBtn').addEventListener('click', () => window.print());
+      $('timeScrubber').addEventListener('input', (event) => updatePlayhead(event.target.value));
+      $('playBtn').addEventListener('click', togglePlayback);
+      $('powerChart').addEventListener('pointermove', (event) => {
+        const rect = event.currentTarget.getBoundingClientRect();
+        const plotWidth = Math.max(1, rect.width - 57);
+        const rawIndex = Math.round((event.clientX - rect.left - 45) / plotWidth * (STEPS - 1));
+        showChartTooltip(Math.max(0, Math.min(STEPS - 1, rawIndex)), event);
+      });
+      $('powerChart').addEventListener('pointerleave', () => { $('chartTooltip').style.display = 'none'; });
+      $('powerChart').addEventListener('keydown', (event) => {
+        if (event.key === 'ArrowLeft' || event.key === 'ArrowRight') {
+          event.preventDefault();
+          updatePlayhead(playIndex + (event.key === 'ArrowRight' ? 1 : -1));
+        } else if (event.key === ' ' || event.key === 'Enter') {
+          event.preventDefault();
+          togglePlayback();
+        }
+      });
+      document.querySelectorAll('.segmented button').forEach((button) => button.addEventListener('click', () => { timelineMode = button.dataset.mode; renderTimeline(); updatePlayhead(playIndex, false); }));
+      $('jobCountLabel').textContent = `${activeJobs.length} batch training jobs`;
+      if ('ResizeObserver' in window) new ResizeObserver(drawChart).observe($('powerChart').parentElement);
+      else window.addEventListener('resize', drawChart);
+      runSimulation();
+    })();
+  </script>
+</body>
+</html>
