@@ -1028,7 +1028,10 @@
           const baselineWithinLimits = baselineBreach === 0 && rampViolations(baseline.power, rampLimit) === 0;
           headline = `${baselineWithinLimits ? 'The baseline already fits the modeled power and ramp limits. ' : ''}PowerFlex ${peakChange}, keeps <strong>${onTime}/${data.jobs.length}</strong> jobs on time, and balances ${objectiveFocus}.`;
         }
-        $('insightText').innerHTML = headline;
+        const safeHeadline = typeof headline === 'string' && headline.trim()
+          ? headline
+          : 'Schedule computed. Review the metrics and constraint status below.';
+        $('insightText').innerHTML = safeHeadline;
         $('shiftedCount').textContent = `${shifted} of ${data.jobs.length}`;
         $('breachDuration').textContent = `${baselineBreach.toFixed(2)} h`;
         $('managedBreach').textContent = `${managedBreach.toFixed(2)} h`;
