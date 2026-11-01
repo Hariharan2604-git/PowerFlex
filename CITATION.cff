@@ -2,7 +2,7 @@ cff-version: 1.2.0
 message: "If you use PowerFlex, please cite this software release."
 title: "PowerFlex"
 type: software
-version: 0.7.0
+version: 0.7.1
 date-released: 2026-11-01
 url: "https://github.com/Hariharan2604-git/PowerFlex"
 license: MIT
