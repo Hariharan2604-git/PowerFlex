@@ -1,8 +1,10 @@
-# PowerFlex v0.7.0
+# PowerFlex v0.7.1
+
+This metadata-only pre-release follows v0.7.0 so Zenodo can archive a release created after the GitHub integration was enabled. It updates `CITATION.cff` to version 0.7.1; the browser demo, scheduler, adapters, and evaluations are unchanged. No new measurements or performance claims are introduced.
 
 PowerFlex v0.7.0 is an independent prototype for inspecting candidate start-time advisories for flexible batch-compute workloads. The browser demo is local-only. The Slurm and Google Cloud Batch adapters are read-only and do not apply recommendations to a scheduler.
 
-## Included
+## Included (unchanged from v0.7.0)
 
 - A browser-based schedule exploration prototype and deterministic synthetic benchmark.
 - A local Slurm advisory adapter with validation, aliasing, and owner-only private ID mapping.
@@ -10,7 +12,7 @@ PowerFlex v0.7.0 is an independent prototype for inspecting candidate start-time
 - Reproducible scripts and sanitized summaries for a small public NLR Eagle trace study, including an EIA-930 regional carbon-intensity proxy.
 - A developer article draft and a citation file for this version.
 
-## Evidence at this release
+## Evidence carried forward from v0.7.0
 
 The broader public-trace sensitivity analysis includes 466 complete representative-node days and 22 one-job counterfactual cases. Four cases moved at least one 15-minute interval. The regional carbon proxy improved in 2 cases, worsened in 2, and was unchanged in 18; the mean change was +0.0013% (slightly higher). This does not show a useful general improvement.
 
