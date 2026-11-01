@@ -91,4 +91,4 @@ PowerFlex is an independent prototype. It is not connected to Google, NVIDIA, Mi
 
 ## License and data attribution
 
-No software license has been selected for this project, so this repository does not grant permission to reuse or redistribute the source code. The NLR-derived data files are subject to their separate terms; preserve the complete notice in [real-data/DATA_LICENSE_NOTICE.txt](real-data/DATA_LICENSE_NOTICE.txt) and the source attributions in the evaluation reports.
+The original PowerFlex source code and project scripts are licensed under the MIT License; see [LICENSE](LICENSE). The copyright notice uses the project's GitHub account handle, `Hariharan2604-git`.\n\nThe MIT License applies to the project's original software, not to third-party material, video assets, or NLR-derived data and data artifacts. NLR data remains subject to its separate terms. Preserve the complete notice in [real-data/DATA_LICENSE_NOTICE.txt](real-data/DATA_LICENSE_NOTICE.txt) and the source attributions in the evaluation reports.
