@@ -4,7 +4,7 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <meta name="theme-color" content="#0b1422">
-  <meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'sha256-ii89bXcm09RCgOujlAwlOwOtuPlAmb/vnis3ZhiJp28='; style-src 'unsafe-inline'; img-src 'self' data:; connect-src 'none'; object-src 'none'; base-uri 'none'; form-action 'none'">
+  <meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'sha256-lzdW+KFCKqucPI0PFmU57+GDptfgAvWqUm9733Ww+yA='; style-src 'unsafe-inline'; img-src 'self' data:; connect-src 'none'; object-src 'none'; base-uri 'none'; form-action 'none'">
   <title>PowerFlex — AI workload power scheduler</title>
   <style>
     :root {
@@ -1020,8 +1020,13 @@
           headline = `PowerFlex fits all <strong>${onTime} jobs</strong> under the ceiling, shifting <strong>${shifted}</strong> jobs to avoid the baseline peak.`;
         } else if (peakGain * powerDisplay().scale > 0.05) {
           headline = `PowerFlex lowers the simulated peak by <strong>${fmtMW(peakGain)}</strong> while keeping <strong>${onTime}/${data.jobs.length}</strong> jobs on time.`;
-        const objectiveFocus = hasRateProfiles(data) ? 'demand, cost, and emissions' : hasCarbonProfile(data) ? 'demand stability and the supplied carbon signal' : hasPriceProfile(data) ? 'demand stability and the supplied price signal' : 'demand stability';
-          headline = 'The baseline already fits the modeled limits. PowerFlex schedules <strong>' + onTime + '/' + data.jobs.length + '</strong> jobs while balancing ' + objectiveFocus + '.';
+        } else {
+          const objectiveFocus = hasRateProfiles(data) ? 'demand, cost, and emissions' : hasCarbonProfile(data) ? 'demand stability and the supplied carbon signal' : hasPriceProfile(data) ? 'demand stability and the supplied price signal' : 'demand stability';
+          const peakChange = Math.abs(peakGain * powerDisplay().scale) > 0.05
+            ? `${peakGain > 0 ? 'lowers' : 'raises'} the simulated peak by <strong>${fmtMW(Math.abs(peakGain))}</strong>`
+            : 'keeps the simulated peak close to the baseline';
+          const baselineWithinLimits = baselineBreach === 0 && rampViolations(baseline.power, rampLimit) === 0;
+          headline = `${baselineWithinLimits ? 'The baseline already fits the modeled power and ramp limits. ' : ''}PowerFlex ${peakChange}, keeps <strong>${onTime}/${data.jobs.length}</strong> jobs on time, and balances ${objectiveFocus}.`;
         }
         $('insightText').innerHTML = headline;
         $('shiftedCount').textContent = `${shifted} of ${data.jobs.length}`;
