@@ -2,7 +2,7 @@
 
 This metadata-only pre-release follows v0.7.0 so Zenodo can archive a release created after the GitHub integration was enabled. It updates `CITATION.cff` to version 0.7.1; the browser demo, scheduler, adapters, and evaluations are unchanged. No new measurements or performance claims are introduced.
 
-The published v0.7.1 source archive has a version-specific DOI: [10.5281/zenodo.23852440](https://doi.org/10.5281/zenodo.23852440).
+The published v0.7.1 source archive has version-specific DOI [10.5281/zenodo.23852440](https://doi.org/10.5281/zenodo.23852440). Use concept DOI [10.5281/zenodo.23852439](https://doi.org/10.5281/zenodo.23852439) to cite the project across versions.
 
 PowerFlex v0.7.0 is an independent prototype for inspecting candidate start-time advisories for flexible batch-compute workloads. The browser demo is local-only. The Slurm and Google Cloud Batch adapters are read-only and do not apply recommendations to a scheduler.
 
