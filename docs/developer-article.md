@@ -1,44 +1,70 @@
-# PowerFlex: exploring power-aware batch scheduling without hiding the trade-offs
+# PowerFlex: a transparent prototype for power-aware batch scheduling
 
-*Developer article draft — an independent project description. The findings below are exploratory and do not establish general savings or production readiness.*
+**Demo and source:** [PowerFlex on GitHub](https://github.com/Hariharan2604-git/PowerFlex) · [Zenodo archive and DOI](https://doi.org/10.5281/zenodo.23852440) · [project DOI](https://doi.org/10.5281/zenodo.23852439)
 
-Large compute workloads do not all need to start immediately. Some batch jobs can tolerate a bounded delay, while data-center operators still need to protect deadlines, throughput, and reliability. PowerFlex is a prototype for exploring whether those flexible start windows can help manage power ramps and respond to changing energy signals.
+PowerFlex explores a practical scheduling question: when a batch-compute job can start within a flexible window, can an operator choose a start time that better fits power, deadline, electricity-price, or carbon constraints?
 
-PowerFlex is deliberately an advisory tool. It compares a supplied baseline schedule with candidate start times, applies the constraints in the scenario, and shows the trade-offs. It does not control a cluster or claim that one schedule is universally better.
+It is an **independent research prototype**, not a production scheduler. The current evidence is mixed and small; it does not establish general cost, carbon, or energy savings. This project has no affiliation with, evaluation by, or endorsement from Google, Microsoft, NVIDIA, NLR, or NREL.
 
-## What the prototype does
+## Try the demo
 
-The browser demo lets a user adjust job windows, duration and power profiles, facility baseline power, a power ceiling, a ramp limit, and interval-based price or carbon inputs. It presents the resulting schedule and constraint outcomes, and can export a run report that records the inputs and assumptions.
+PowerFlex is a browser-only demo. Download or clone the project, open `index.html` in a current browser, and use **Load scenario JSON** to inspect the sanitized trace scenarios. You can adjust job windows, modeled run times and power profiles, baseline load, power and ramp thresholds, and energy objectives. The interface compares a reference schedule with a candidate schedule and shows modeled constraint outcomes; it can export the inputs, assumptions, schedules, and interval results as a run report.
 
-Two local adapters show how an advisory workflow might connect to existing schedulers:
+The previously shared GitHub Pages address currently returns a 404, so this article does not present it as a working hosted demo. The repository and DOI archive provide the code and reproducible local demo instead.
 
-- The Slurm adapter can read a saved `scontrol show jobs --json` snapshot or query an authorized Slurm environment. It requires actual due times, runtime forecasts, validated job-power profiles, and aligned site signals before it recommends a move. It has no scheduler-apply path.
-- The Google Cloud Batch adapter uses local Application Default Credentials to list queued jobs through the Batch v1 API. It keeps Cloud Batch identifiers in a separate local mapping file and emits alias-only recommendations. It does not modify Batch jobs, and it has not been live-validated against a Google Cloud project.
+## How it is structured
 
-Both adapters are examples of a read-only boundary, not an enterprise security certification. Review the setup and privacy notes in [`scheduler-adapters/README.md`](../scheduler-adapters/README.md) and [`scheduler-adapters/google-cloud-batch.md`](../scheduler-adapters/google-cloud-batch.md) before using them.
+The prototype has three parts: a local browser application, offline evaluation scripts, and read-only scheduler adapters.
 
-## What the available trace evidence says
+```mermaid
+flowchart LR
+  A[Scenario: jobs, windows, power, site signals] --> B[Validate and normalize]
+  B --> C[Build reference schedule and load trace]
+  C --> D[Search candidate start times]
+  D --> E[Rank constraint violations first, then objective]
+  E --> F[Schedule, metrics, assumptions, run report]
+  G[Slurm snapshot or authorized read-only query] --> H[Alias job IDs locally]
+  I[Cloud Batch queued-job list] --> H
+  H --> B
+  F --> J[Human review; no scheduler apply path]
+```
 
-The broader offline study uses anonymized public NLR Eagle job snapshots, measured whole-node telemetry from six representative GPU nodes, and an hourly EIA-930 carbon-intensity estimate for the PSCO balancing authority. Across three job snapshots, 466 UTC node-days passed the completeness checks. The analysis produced 22 clean one-job counterfactual cases with explicitly assumed scheduling slack.
+The browser app runs locally and makes no network calls. Its deterministic heuristic considers candidate start times, then prioritizes fewer modeled hard-constraint events, less total constraint excess, and finally the selected objective score. It is not a global optimizer and may return a best-effort schedule when constraints conflict.
 
-Only four cases moved by at least one 15-minute slot. The regional carbon proxy improved in two cases, worsened in two, and did not change in eighteen. Its mean change was **+0.0013%**, slightly higher. The median changes were zero. This experiment does **not** show a useful general improvement.
+The Slurm adapter can read a saved `scontrol show jobs --json` snapshot or make that read-only query in an authorized cluster environment. The Google Cloud Batch adapter can list queued jobs through the Batch v1 API using local Application Default Credentials. Both create aliased recommendations plus a separate local mapping for an operator. Neither adapter changes a job. The Cloud Batch adapter has not been live-validated against a Google Cloud project, and this workspace has no authorized live Slurm connection.
 
-A separate one-day replay used 1,440 one-minute meter samples and three matched completed jobs. The largest 15-minute ramp fell by 12.3%, and power-ceiling-violation intervals fell from five to three, but the peak increased by 9.9% and five ramp-limit violations remained. The thresholds were derived from that trace for stress testing; they are not engineering or safety limits.
+## What the public-trace evaluation found
 
-## What the evidence cannot tell us
+The evaluation uses public, anonymized NLR Eagle workload records and representative GPU-node iLO power measurements. A separate broad sensitivity analysis pairs selected windows with EIA-930's hourly estimated carbon intensity for the PSCO balancing authority. It reports source units, UTC alignment, cleaning, exclusions, assumptions, and privacy handling in the repository reports.
 
-The public job trace has submission, start, end, and requested wall-clock limits, but no real user completion deadlines. The replay therefore uses synthetic slack and cannot demonstrate SLA compliance. The carbon input is a regional average estimate, not facility telemetry or a marginal-emissions signal. There is no aligned facility electricity tariff, so cost outcomes were not evaluated.
+In the one-day, one-node replay, three completed single-node GPU jobs were modeled against measured whole-node power. The selected schedule reduced the largest 15-minute ramp by **12.3%** and reduced intervals above the data-derived power ceiling from **five to three**, but the modeled peak increased by **9.9%** and five ramp-limit violations remained. The thresholds are stress-test values derived from the trace, not safe operating limits.
 
-The power is representative-node, whole-node power, not GPU-only or facility power. Jobs are replayed one at a time against historical activity; the analysis is not a full-cluster scheduling comparison. These limits matter: the observed results should not be described as energy savings, a Google Cloud benchmark, or a company deployment result.
+In the broader analysis, 466 fully measured node-day windows yielded 22 one-job counterfactual cases. Four jobs shifted by at least one 15-minute slot. The regional carbon proxy improved in two cases, worsened in two, and was unchanged in eighteen; the mean change was **+0.0013%** (slightly higher), with a median of zero. This result does not show a useful general improvement.
 
-## Reproducing the work
+## Reproduce the bundled results
 
-The repository includes sanitized inputs, preparation and replay scripts, result summaries, and the required NLR data-use notice. Follow [`real-data/README.md`](../real-data/README.md) and [`real-data/broad/evaluation_report.md`](../real-data/broad/evaluation_report.md) for units, UTC alignment, cleaning rules, data sources, and reproduction commands. Raw source traces and local node selectors are not included.
+Use Node.js 18 or newer and Python 3. From the project root, the sanitized inputs and scripts in the archive reproduce the scheduler replay and its independent report check:
 
-The project is available at [github.com/Hariharan2604-git/PowerFlex](https://github.com/Hariharan2604-git/PowerFlex). The interactive prototype is at [hariharan2604-git.github.io/PowerFlex](https://hariharan2604-git.github.io/PowerFlex/).
+```sh
+node real-data/run_evaluation.mjs
+python3 verify_run_report.py real-data/powerflex_real_data_run_report.json
+node real-data/run_broad_evaluation.mjs
+```
 
-The v0.7.1 source archive is preserved in Zenodo with version-specific DOI [10.5281/zenodo.23852440](https://doi.org/10.5281/zenodo.23852440). Use concept DOI [10.5281/zenodo.23852439](https://doi.org/10.5281/zenodo.23852439) to cite the project across versions. This metadata-only follow-up does not add evaluation results; the findings above remain the v0.7.0 public-trace results and limitations.
+The first command reruns the one-day sample using the exact scheduler functions embedded in `index.html`. The Python verifier independently rebuilds the schedules and traces and recomputes metrics. The third command reruns the 22 bundled broad sensitivity cases. To inspect a case interactively, open `index.html`, select **Load scenario JSON**, and choose `real-data/scenario.json` or `real-data/broad/broad_carbon_demo_scenario.json`.
 
-## What would strengthen the next evaluation
+To repeat the data preparation from source, obtain the public NLR job snapshots and GPU-node meter files, plus the EIA PSCO workbook. Follow the exact input paths, commands, cleaning rules, and NLR attribution notice in [`real-data/README.md`](https://github.com/Hariharan2604-git/PowerFlex/blob/main/real-data/README.md), [`real-data/evaluation_report.md`](https://github.com/Hariharan2604-git/PowerFlex/blob/main/real-data/evaluation_report.md), and [`real-data/broad/evaluation_report.md`](https://github.com/Hariharan2604-git/PowerFlex/blob/main/real-data/broad/evaluation_report.md). The broad preparer needs Python's `openpyxl` package. Raw traces and source-node selectors are not included in the demo; only sanitized inputs and generated identifiers are shared.
 
-The next meaningful step is a multi-day, authorized evaluation using real completion deadlines, measured runtime and power profiles, a site electricity-price feed, and an appropriate carbon signal. It should compare against the existing scheduler on the same workload and report deadline misses, throughput, power, cost, carbon, and reliability under stated guardrails. Until those inputs are available, PowerFlex remains a transparent prototype for exploring constraints and trade-offs.
+## Limitations and security boundary
+
+The public job trace has no actual user completion deadlines. The replays use explicitly synthetic slack, so they cannot establish SLA compliance. The broad analysis uses a regional average carbon estimate, not facility telemetry or marginal emissions. There is no aligned facility electricity tariff, so the real-data work does not evaluate cost. The measured power is whole-node power, not GPU-only or facility power. The one-job counterfactuals do not represent simultaneous jobs, full-cluster scheduling, or a company workload.
+
+The demo has no authentication, roles, backend, telemetry, or external network calls. The adapters are read-only and keep operational identifiers in a separate local mapping where supported. These boundaries reduce exposure for a local prototype; they are not an enterprise security certification. A deployment would still need organizational authorization, threat modeling, SSO and role controls, tenant isolation, audit and retention policies, monitoring, secure hosting, and a supervised application path. Data provenance labels are supplied by the operator and are not independently authenticated.
+
+## What would make the next evaluation stronger
+
+The next useful study is a multi-day, authorized shadow evaluation against an existing scheduler, with real completion deadlines, validated runtime and power profiles, measured site power, a time-aligned electricity tariff, and an appropriately scoped carbon signal. It should compare both systems on the same workload and report deadline misses, throughput, peak and ramp behavior, reliability, cost, and carbon—with units, timezone, data-cleaning rules, and uncertainty stated up front.
+
+Until then, PowerFlex is best read as a transparent prototype for examining scheduling trade-offs and the data required to evaluate them.
+
+**Cite:** [PowerFlex v0.7.1](https://doi.org/10.5281/zenodo.23852440) · [Concept DOI](https://doi.org/10.5281/zenodo.23852439)
