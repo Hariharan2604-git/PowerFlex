@@ -1,10 +1,14 @@
-# PowerFlex v0.6
+# PowerFlex v0.7
 
 PowerFlex is a local browser prototype for exploring how flexible batch-compute jobs could be moved within release/deadline windows to reduce data-center power peaks and respond to time-varying energy cost and grid emissions. It is a decision-support demo, not an operational scheduler.
 
 ## Open it
 
 Open `index.html` in a current browser. The app has no external packages, backend, telemetry, or network calls. Imported JSON is validated and used in the browser; it is not uploaded.
+
+## Developer article and release notes
+
+Read the evidence-bounded [developer article](docs/developer-article.md) for the prototype, adapters, trace results, and limits. See [RELEASE_NOTES.md](RELEASE_NOTES.md) for the v0.7.0 release summary.
 
 ## What changed in v0.4
 
@@ -27,6 +31,13 @@ Open `index.html` in a current browser. The app has no external packages, backen
 - The Slurm CLI rejects unknown or duplicate flags, malformed timestamps without explicit time zones, non-numeric signal values, duplicate pending job IDs, oversized input files, and missing power/price/carbon provenance.
 - Output destinations are checked before processing. The adapter refuses symbolic links, input/output collisions, identical advisory and private-map paths, and existing files unless `--force` is explicitly supplied. Output files are staged locally and written owner-only where supported.
 - The public advisory labels source provenance as operator-supplied and not independently verified. It never includes the private job-ID map path in the advisory JSON.
+
+## What changed in v0.7
+
+- Added `scheduler-adapters/google-batch-advisory.mjs`, a local, read-only integration with Google Cloud Batch v1. Live mode uses Application Default Credentials to list queued jobs in one selected project and region, then combines those jobs with local deadline, runtime, power-profile, and site-signal files. See [the setup guide](scheduler-adapters/google-cloud-batch.md).
+- Cloud Batch job IDs and project details are kept in a separate owner-only local mapping file. The public advisory uses aliases and the adapter has no Cloud Batch mutation path.
+- Added `scheduler-adapters/google-cloud-batch.md` with setup, IAM, data schemas, privacy boundaries, evidence, and limitations. Added `docs/google-dev-library-submission.md` as a candid submission draft.
+- The adapter is not live-validated against a Google Cloud project in this workspace. No credentials, project ID, or authorized site signal set was available. See the integration guide before running it.
 
 ## Run the benchmark
 
@@ -70,7 +81,9 @@ A first privacy-minimized scheduler replay is available in [real-data/evaluation
 
 ## Security posture
 
-This is a local-only prototype. It has no authentication, user roles, backend, telemetry, or external network calls. The Content Security Policy blocks connections and allows the application script by an exact hash. JSON imports are limited to 256 KB and validated for schema, profile lengths and numeric ranges, job count, unique IDs, and 15-minute-aligned times. Imported values are rendered as data, not executable code.
+The browser demo remains local-only: it has no authentication, user roles, backend, telemetry, or external network calls. The Content Security Policy blocks connections and allows the application script by an exact hash. JSON imports are limited to 256 KB and validated for schema, profile lengths and numeric ranges, job count, unique IDs, and 15-minute-aligned times. Imported values are rendered as data, not executable code.
+
+The separate Google Cloud Batch CLI adapter makes authenticated, read-only HTTPS requests to the selected Google Cloud project and region. It obtains credentials from local Application Default Credentials, requires only Batch job-view access, emits alias-only advisory JSON, and writes resource-name mappings locally with owner-only permissions where supported. It never creates, edits, cancels, deletes, or reschedules a Batch job. Review [the Google Cloud Batch integration guide](scheduler-adapters/google-cloud-batch.md) before use.
 
 Those controls reduce exposure for this demo; they do not certify the app or its output. The advisory CLI still executes the project-owned solver code locally, and provenance labels are not independently authenticated. An enterprise pilot would still need approved hosting, SSO, role-based access, tenant isolation, encrypted transport and storage, audit and retention controls, monitoring, a threat model, and a security review. Integrations should begin read-only. Operational control would require validated data, engineering approval, and a human-supervised fail-safe path.
 
@@ -87,7 +100,9 @@ Then choose **Load scenario JSON**. The file must be at most 256 KB. Values stay
 
 ## Project status
 
-PowerFlex is an independent prototype. It is not connected to Google, NVIDIA, Microsoft, or another company system, and no company has evaluated or endorsed it. The Slurm integration currently runs locally in advisory mode only; the present workspace has no `scontrol` command or cluster credentials. The public-trace evidence still lacks actual user deadlines and a site price feed, so a full deadline-, cost-, and carbon-constrained evaluation is not available yet. See `real-data/advisory_evaluation_readiness.md` for exact inputs and current evaluation results.
+PowerFlex is an independent prototype. It includes code for a read-only Google Cloud Batch integration, but it has not been configured for or live-validated against a Google Cloud project in this workspace. No company, including Google, NVIDIA, or Microsoft, has evaluated or endorsed it. The existing public-trace evidence still lacks actual user deadlines and a site price feed, so a full deadline-, cost-, and carbon-constrained evaluation is not available yet. See `real-data/advisory_evaluation_readiness.md` and `scheduler-adapters/google-cloud-batch.md` for the exact evidence and current limits.
+
+Google Dev Library's official page stated on 1 November 2026 that new community submissions were temporarily closed. The prepared listing is in `docs/google-dev-library-submission.md`; it has not been submitted and is not an acceptance or endorsement.
 
 ## Contributors
 

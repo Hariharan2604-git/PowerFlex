@@ -1,0 +1,16 @@
+cff-version: 1.2.0
+message: "If you use PowerFlex, please cite this software release."
+title: "PowerFlex"
+type: software
+version: 0.7.0
+date-released: 2026-11-01
+url: "https://github.com/Hariharan2604-git/PowerFlex"
+license: MIT
+authors:
+  - name: "Hari Haran"
+  - name: "Darsani SM"
+abstract: >-
+  PowerFlex is an independent prototype for exploring read-only, deadline-aware
+  advisory scheduling of flexible batch-compute jobs under modeled power,
+  electricity-price, and carbon constraints. Its public-trace evaluation is
+  limited and mixed; it does not establish general savings or production readiness.
