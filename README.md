@@ -10,6 +10,11 @@ Open `index.html` in a current browser. The app has no external packages, backen
 
 Read the evidence-bounded [developer article](docs/developer-article.md) for the prototype, adapters, trace results, and limits. See [RELEASE_NOTES.md](RELEASE_NOTES.md) for the v0.7.1 release summary and unchanged v0.7.0 evaluation evidence.
 
+
+## DOI and archived source
+
+The v0.7.1 source archive is preserved in Zenodo: [10.5281/zenodo.23852440](https://doi.org/10.5281/zenodo.23852440). This is a version-specific DOI for the metadata-only archive follow-up; the evaluation evidence is carried forward from v0.7.0.
+
 ## What changed in v0.4
 
 - The schedule search ranks hard-constraint event count and total excess before the selected objective score. The heuristic no longer prefers a cheaper or lower-carbon schedule that has more modeled cap, ramp, or deadline violations.
