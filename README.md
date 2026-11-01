@@ -1,6 +1,6 @@
-# PowerFlex v0.7
+# PowerFlex v0.7.1
 
-PowerFlex is a local browser prototype for exploring how flexible batch-compute jobs could be moved within release/deadline windows to reduce data-center power peaks and respond to time-varying energy cost and grid emissions. It is a decision-support demo, not an operational scheduler.
+PowerFlex is a local browser prototype for exploring how flexible batch-compute jobs could be moved within release/deadline windows to reduce data-center power peaks and respond to time-varying energy cost and grid emissions. It is a decision-support demo, not an operational scheduler. v0.7.1 is a metadata-only follow-up for Zenodo archiving; it adds no scheduler changes or evaluation evidence.
 
 ## Open it
 
@@ -8,7 +8,7 @@ Open `index.html` in a current browser. The app has no external packages, backen
 
 ## Developer article and release notes
 
-Read the evidence-bounded [developer article](docs/developer-article.md) for the prototype, adapters, trace results, and limits. See [RELEASE_NOTES.md](RELEASE_NOTES.md) for the v0.7.0 release summary.
+Read the evidence-bounded [developer article](docs/developer-article.md) for the prototype, adapters, trace results, and limits. See [RELEASE_NOTES.md](RELEASE_NOTES.md) for the v0.7.1 release summary and unchanged v0.7.0 evaluation evidence.
 
 ## What changed in v0.4
 
