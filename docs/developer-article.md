@@ -37,6 +37,8 @@ The repository includes sanitized inputs, preparation and replay scripts, result
 
 The project is available at [github.com/Hariharan2604-git/PowerFlex](https://github.com/Hariharan2604-git/PowerFlex). The interactive prototype is at [hariharan2604-git.github.io/PowerFlex](https://hariharan2604-git.github.io/PowerFlex/).
 
+The v0.7.1 source archive is preserved in Zenodo with a version-specific DOI: [10.5281/zenodo.23852440](https://doi.org/10.5281/zenodo.23852440). This metadata-only follow-up does not add evaluation results; the findings above remain the v0.7.0 public-trace results and limitations.
+
 ## What would strengthen the next evaluation
 
 The next meaningful step is a multi-day, authorized evaluation using real completion deadlines, measured runtime and power profiles, a site electricity-price feed, and an appropriate carbon signal. It should compare against the existing scheduler on the same workload and report deadline misses, throughput, power, cost, carbon, and reliability under stated guardrails. Until those inputs are available, PowerFlex remains a transparent prototype for exploring constraints and trade-offs.
