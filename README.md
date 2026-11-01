@@ -89,6 +89,13 @@ Then choose **Load scenario JSON**. The file must be at most 256 KB. Values stay
 
 PowerFlex is an independent prototype. It is not connected to Google, NVIDIA, Microsoft, or another company system, and no company has evaluated or endorsed it. The Slurm integration currently runs locally in advisory mode only; the present workspace has no `scontrol` command or cluster credentials. The public-trace evidence still lacks actual user deadlines and a site price feed, so a full deadline-, cost-, and carbon-constrained evaluation is not available yet. See `real-data/advisory_evaluation_readiness.md` for exact inputs and current evaluation results.
 
+## Contributors
+
+- Hari Haran
+- Darsani SM
+
 ## License and data attribution
 
-The original PowerFlex source code and project scripts are licensed under the MIT License; see [LICENSE](LICENSE). The copyright notice uses the project's GitHub account handle, `Hariharan2604-git`.\n\nThe MIT License applies to the project's original software, not to third-party material, video assets, or NLR-derived data and data artifacts. NLR data remains subject to its separate terms. Preserve the complete notice in [real-data/DATA_LICENSE_NOTICE.txt](real-data/DATA_LICENSE_NOTICE.txt) and the source attributions in the evaluation reports.
+The original PowerFlex source code and project scripts are licensed under the MIT License; see [LICENSE](LICENSE). The copyright notice uses the project's GitHub account handle, `Hariharan2604-git`.
+
+The MIT License applies to the project's original software, not to third-party material, video assets, or NLR-derived data and data artifacts. NLR data remains subject to its separate terms. Preserve the complete notice in [real-data/DATA_LICENSE_NOTICE.txt](real-data/DATA_LICENSE_NOTICE.txt) and the source attributions in the evaluation reports.
