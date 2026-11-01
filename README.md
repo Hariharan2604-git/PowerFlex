@@ -13,7 +13,7 @@ Read the evidence-bounded [developer article](docs/developer-article.md) for the
 
 ## DOI and archived source
 
-The v0.7.1 source archive is preserved in Zenodo: [10.5281/zenodo.23852440](https://doi.org/10.5281/zenodo.23852440). This is a version-specific DOI for the metadata-only archive follow-up; the evaluation evidence is carried forward from v0.7.0.
+The v0.7.1 source archive is preserved in Zenodo: [10.5281/zenodo.23852440](https://doi.org/10.5281/zenodo.23852440). For citations that should always resolve to the latest version, use the concept DOI [10.5281/zenodo.23852439](https://doi.org/10.5281/zenodo.23852439). The evaluation evidence is carried forward from v0.7.0.
 
 ## What changed in v0.4
 
