@@ -5,7 +5,11 @@ type: software
 version: 0.7.1
 date-released: 2026-11-01
 url: "https://github.com/Hariharan2604-git/PowerFlex"
-doi: 10.5281/zenodo.23852440
+doi: 10.5281/zenodo.23852439
+identifiers:
+  - type: doi
+    value: 10.5281/zenodo.23852440
+    description: "Version-specific DOI for v0.7.1."
 license: MIT
 authors:
   - name: "Hari Haran"
